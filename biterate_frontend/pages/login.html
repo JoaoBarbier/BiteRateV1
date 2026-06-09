@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — BiteRate</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { background: var(--cream-light); min-height: 100vh; display: flex; flex-direction: column; }
+
+    .auth-page {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 64px);
+    }
+
+    /* Left panel */
+    .auth-left {
+      background: linear-gradient(150deg, var(--purple) 0%, #7a1060 60%, var(--orange) 130%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 3.5rem;
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-left::before {
+      content: '';
+      position: absolute;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.05);
+      bottom: -80px; right: -80px;
+    }
+    .auth-left::after {
+      content: '';
+      position: absolute;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      top: 40px; right: 60px;
+    }
+    .auth-tagline {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+    .auth-tagline span { color: var(--cream); }
+    .auth-left p {
+      font-size: 1.05rem;
+      opacity: .85;
+      line-height: 1.65;
+      max-width: 380px;
+      position: relative;
+    }
+    .auth-features {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      position: relative;
+    }
+    .auth-features li {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-size: .95rem;
+      opacity: .9;
+    }
+    .auth-features li i { color: var(--cream); font-size: 1rem; flex-shrink: 0; }
+
+    /* Right panel */
+    .auth-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2.5rem 2rem;
+      background: var(--white);
+    }
+    .auth-form-box {
+      width: 100%;
+      max-width: 400px;
+    }
+    .auth-form-box .logo-text {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--purple);
+      margin-bottom: 1.75rem;
+      display: block;
+      text-align: center;
+    }
+    .auth-form-box .logo-text span { color: var(--orange); }
+    .auth-form-box h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--gray-800);
+      margin-bottom: .35rem;
+    }
+    .auth-form-box .subtitle {
+      font-size: .9rem;
+      color: var(--gray-600);
+      margin-bottom: 1.75rem;
+    }
+
+    /* Password toggle */
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap .form-control { padding-right: 2.8rem; }
+    .input-toggle {
+      position: absolute; right: .9rem; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: var(--gray-400); cursor: pointer; font-size: .95rem;
+      transition: color var(--transition);
+    }
+    .input-toggle:hover { color: var(--gray-600); }
+
+    /* Remember & forgot */
+    .form-extras {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .85rem;
+      margin-bottom: 1.25rem;
+    }
+    .form-extras label { display: flex; align-items: center; gap: .4rem; cursor: pointer; color: var(--gray-600); }
+    .form-extras a { color: var(--orange); font-weight: 600; }
+    .form-extras a:hover { text-decoration: underline; }
+
+    /* Social login */
+    .social-login { display: flex; gap: .75rem; margin-top: .75rem; }
+    .social-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .6rem; border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+      font-size: .85rem; font-weight: 600; color: var(--gray-700);
+      background: var(--white); cursor: pointer;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .social-btn:hover { border-color: var(--gray-400); box-shadow: var(--shadow); }
+
+    .auth-switch { text-align: center; font-size: .88rem; color: var(--gray-600); margin-top: 1.25rem; }
+    .auth-switch a { color: var(--orange); font-weight: 700; }
+    .auth-switch a:hover { text-decoration: underline; }
+
+    @media(max-width:768px) {
+      .auth-page { grid-template-columns: 1fr; }
+      .auth-left { display: none; }
+      .auth-right { padding: 2rem 1.25rem; justify-content: flex-start; padding-top: 3rem; }
+    }
+  </style>
+</head>
+<body>
+<!-- Navbar mínima -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="navbar-logo" href="../index.html">
+      <div class="logo-mark">B</div>
+            <span class="logo-text">bite<span>rate</span>.</span>
+    </a>
+    <div class="navbar-actions" style="margin-left:auto;">
+      <a href="register.html" style="color:rgba(255,255,255,.8);font-size:.88rem;">Não tem conta? <strong style="color:var(--cream);">Cadastre-se</strong></a>
+    </div>
+  </div>
+</nav>
+
+<main class="auth-page">
+  <!-- Left -->
+  <div class="auth-left" aria-hidden="true">
+    <div class="auth-tagline">A cada mordida,<br><span>uma nova experiência.</span></div>
+    <p>Junte-se a milhares de apaixonados por gastronomia que já compartilham suas experiências na BiteRate.</p>
+    <ul class="auth-features">
+      <li><i class="fa-solid fa-circle-check"></i> Acesse avaliações de milhares de restaurantes</li>
+      <li><i class="fa-solid fa-circle-check"></i> Escreva críticas e ajude a comunidade</li>
+      <li><i class="fa-solid fa-circle-check"></i> Favorite e organize seus restaurantes preferidos</li>
+      <li><i class="fa-solid fa-circle-check"></i> Acompanhe o ranking dos melhores da cidade</li>
+    </ul>
+  </div>
+
+  <!-- Right -->
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <a href="../index.html" class="logo-text">bite<span>rate</span>.</a>
+      <h1>Bem-vindo(a) de volta!</h1>
+      <p class="subtitle">Catalogue suas experiências gastronômicas e compartilhe.</p>
+
+      <!-- Alert (hidden by default) -->
+      <div class="alert alert-error" id="loginError" style="display:none;" role="alert">
+        <i class="fa-solid fa-circle-exclamation"></i> <span>E-mail ou senha incorretos.</span>
+      </div>
+
+      <form id="loginForm" novalidate onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="email">E-mail</label>
+          <input class="form-control" type="email" id="email" name="email"
+                 placeholder="seu@email.com" autocomplete="email" required>
+          <span class="form-error">Por favor, insira um e-mail válido.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="senha">Senha</label>
+          <div class="input-icon-wrap">
+            <input class="form-control" type="password" id="senha" name="senha"
+                   placeholder="••••••••" autocomplete="current-password" required minlength="6">
+            <button type="button" class="input-toggle" onclick="togglePwd('senha', this)" aria-label="Mostrar/ocultar senha">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+          <span class="form-error">A senha deve ter pelo menos 6 caracteres.</span>
+        </div>
+
+        <div class="form-extras">
+          <label>
+            <input type="checkbox" name="remember"> Lembrar de mim
+          </label>
+          <a href="#">Esqueci a senha</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar
+        </button>
+      </form>
+
+      <div class="divider-or">ou entre com</div>
+
+      <!-- BACKEND: implementar login social (OAuth2 Google/Facebook) -->
+      <div class="social-login">
+        <button class="social-btn" type="button" disabled title="Em breve">
+          <img src="https://www.google.com/favicon.ico" width="16" height="16" alt=""> Google
+        </button>
+        <button class="social-btn" type="button" disabled title="Em breve">
+          <i class="fa-brands fa-facebook" style="color:#1877f2;"></i> Facebook
+        </button>
+      </div>
+
+      <p class="auth-switch">Não tem uma conta? <a href="register.html">Cadastre-se grátis</a></p>
+    </div>
+  </div>
+</main>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../js/api.js"></script>
+<script>
+  function togglePwd(id, btn) {
+    const input = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'fa-regular fa-eye-slash';
+    } else {
+      input.type = 'password';
+      icon.className = 'fa-regular fa-eye';
+    }
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.email.value.trim();
+    const senha = form.senha.value;
+    let valid = true;
+
+    form.querySelectorAll('.form-control').forEach(el => el.classList.remove('invalid'));
+    document.getElementById('loginError').style.display = 'none';
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      form.email.classList.add('invalid');
+      valid = false;
+    }
+    if (!senha || senha.length < 6) {
+      form.senha.classList.add('invalid');
+      valid = false;
+    }
+    if (!valid) return;
+
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
+
+    try {
+      await login(email, senha);
+      window.location.href = '../index.html';
+    } catch (err) {
+      const errDiv = document.getElementById('loginError');
+      errDiv.style.display = 'flex';
+      const span = errDiv.querySelector('span');
+      if (span) span.textContent = err.message || 'E-mail ou senha incorretos.';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+    }
+  }
+
+  function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info' };
+    t.innerHTML = `<i class="fa-solid ${icons[type]||'fa-circle-info'}"></i> ${msg}`;
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+</script>
+</body>
+</html>
+                                            

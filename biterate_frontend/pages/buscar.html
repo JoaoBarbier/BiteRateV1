@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar restaurantes — BiteRate</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { background: var(--gray-100); min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; padding: 2rem 0 3rem; }
+
+    .search-hero {
+      background: linear-gradient(135deg, var(--purple) 0%, #7a1060 100%);
+      padding: 2rem 0; color: var(--white);
+    }
+    .search-hero h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+    .search-bar-big {
+      display: flex; background: var(--white); border-radius: var(--radius);
+      overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+    .search-bar-big input {
+      flex: 1; padding: .85rem 1.1rem; border: none; outline: none;
+      font-size: 1rem; color: var(--gray-800);
+    }
+    .search-bar-big button {
+      background: var(--orange); color: var(--white); border: none;
+      padding: .85rem 1.5rem; font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: background var(--transition);
+    }
+    .search-bar-big button:hover { background: #d93c00; }
+
+    .results-layout { display: grid; grid-template-columns: 260px 1fr; gap: 1.5rem; align-items: start; }
+
+    /* Filters sidebar */
+    .filters-sidebar {
+      background: var(--white); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow); padding: 1.25rem; position: sticky; top: 80px;
+    }
+    .filter-section { margin-bottom: 1.5rem; }
+    .filter-section:last-child { margin-bottom: 0; }
+    .filter-title { font-size: .88rem; font-weight: 700; color: var(--purple); margin-bottom: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+    .filter-option { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; cursor: pointer; font-size: .88rem; color: var(--gray-700); }
+    .filter-option input { accent-color: var(--orange); }
+    .filter-option:hover { color: var(--orange); }
+    .filter-range { display: flex; flex-direction: column; gap: .4rem; }
+    .filter-range input[type="range"] { accent-color: var(--orange); width: 100%; }
+    .filter-range .range-labels { display: flex; justify-content: space-between; font-size: .78rem; color: var(--gray-400); }
+
+    /* Results */
+    .results-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem; flex-wrap: wrap; gap: .5rem;
+    }
+    .results-count { font-size: .9rem; color: var(--gray-600); }
+    .results-count strong { color: var(--gray-800); }
+    .view-toggle { display: flex; gap: .3rem; }
+    .view-btn {
+      width: 34px; height: 34px; border-radius: 7px;
+      background: none; border: 1.5px solid var(--gray-200); color: var(--gray-400);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: all var(--transition);
+    }
+    .view-btn.active { border-color: var(--orange); color: var(--orange); background: rgba(249,69,0,.06); }
+
+    /* Sort */
+    .sort-bar { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .sort-bar .sort-label { font-size: .85rem; color: var(--gray-600); }
+    .sort-chips { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .sort-chip {
+      padding: .35rem .85rem; border-radius: 20px; font-size: .82rem; font-weight: 600;
+      border: 1.5px solid var(--gray-200); color: var(--gray-600); background: none; cursor: pointer;
+      transition: all var(--transition);
+    }
+    .sort-chip:hover { border-color: var(--orange); color: var(--orange); }
+    .sort-chip.active { border-color: var(--orange); color: var(--orange); background: rgba(249,69,0,.06); }
+
+    /* List view */
+    .restaurant-list-item {
+      background: var(--white); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow); padding: 1.1rem 1.25rem;
+      margin-bottom: .85rem; display: flex; gap: 1.1rem; align-items: flex-start;
+      transition: box-shadow var(--transition), transform var(--transition);
+      cursor: pointer;
+    }
+    .restaurant-list-item:hover { box-shadow: var(--shadow-hover); transform: translateX(3px); }
+    .rli-img {
+      width: 90px; height: 90px; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--cream), #f0c870);
+      display: flex; align-items: center; justify-content: center; font-size: 2.2rem; flex-shrink: 0;
+    }
+    .rli-body { flex: 1; }
+    .rli-cat { font-size: .75rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: .4px; margin-bottom: .2rem; }
+    .rli-name { font-size: 1rem; font-weight: 700; color: var(--gray-800); margin-bottom: .2rem; }
+    .rli-address { font-size: .82rem; color: var(--gray-600); margin-bottom: .45rem; }
+    .rli-meta { display: flex; align-items: center; gap: 1rem; font-size: .82rem; color: var(--gray-500); flex-wrap: wrap; }
+    .rli-rating { display: flex; align-items: center; gap: .35rem; }
+    .rli-side { display: flex; flex-direction: column; align-items: flex-end; gap: .5rem; flex-shrink: 0; }
+
+    @media(max-width:900px) { .results-layout { grid-template-columns: 1fr; } .filters-sidebar { position: static; } }
+    @media(max-width:600px) { .search-bar-big input { font-size: .9rem; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="navbar-logo" href="../index.html">
+      <div class="logo-mark">B</div>
+            <span class="logo-text">bite<span>rate</span>.</span>
+    </a>
+    <div class="navbar-search">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="search" id="navSearch" placeholder="Pesquisar restaurantes...">
+    </div>
+    <div class="navbar-actions">
+      <div class="nav-avatar" onclick="window.location.href='perfil.html'">F</div>
+    </div>
+  </div>
+</nav>
+
+<!-- Search hero -->
+<div class="search-hero">
+  <div class="container">
+    <h1><i class="fa-solid fa-magnifying-glass"></i> Encontrar restaurantes</h1>
+    <div class="search-bar-big" role="search">
+      <input type="search" id="mainSearch" placeholder="Nome do restaurante, culinária ou bairro..." aria-label="Buscar restaurante"
+             oninput="doSearch()">
+      <button onclick="doSearch()" aria-label="Buscar"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <div class="results-layout">
+
+      <!-- Filters -->
+      <aside class="filters-sidebar" aria-label="Filtros de busca">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          <h2 style="font-size:1rem;font-weight:700;color:var(--purple);margin:0;"><i class="fa-solid fa-sliders" style="color:var(--orange);"></i> Filtros</h2>
+          <button style="font-size:.78rem;color:var(--orange);background:none;border:none;cursor:pointer;font-weight:600;" onclick="clearFilters()">Limpar</button>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Categoria</div>
+          <label class="filter-option"><input type="checkbox" id="catTodos" onchange="toggleTodos(this)"> Todos</label>
+          <label class="filter-option"><input type="checkbox" name="categoria" value="Italiano" onchange="applyFilters()"> 🍝 Italiano</label>
+          <label class="filter-option"><input type="checkbox" name="categoria" value="Japonês" onchange="applyFilters()"> 🍣 Japonês</label>
+          <label class="filter-option"><input type="checkbox" name="categoria" value="Pizzaria" onchange="applyFilters()"> 🍕 Pizzaria</label>
+          <label class="filter-option"><input type="checkbox" name="categoria" value="Churrascaria" onchange="applyFilters()"> 🥩 Churrascaria</label>
+          <label class="filter-option"><input type="checkbox" name="categoria" value="Café" onchange="applyFilters()"> ☕ Café</label>
+          <label class="filter-option"><input type="checkbox" name="categoria" value="Vegetariano" onchange="applyFilters()"> 🥗 Vegetariano</label>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Nota mínima</div>
+          <div class="filter-range">
+            <input type="range" min="1" max="5" step="0.5" value="1" id="ratingFilter" oninput="updateRatingLabel(this.value)">
+            <div class="range-labels">
+              <span>1 ★</span>
+              <span id="ratingLabel" style="font-weight:700;color:var(--orange);">1.0 ★</span>
+              <span>5 ★</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Faixa de preço</div>
+          <label class="filter-option"><input type="checkbox" name="faixaPreco" value="1" onchange="applyFilters()"> 💰 Econômico</label>
+          <label class="filter-option"><input type="checkbox" name="faixaPreco" value="2" onchange="applyFilters()"> 💰💰 Moderado</label>
+          <label class="filter-option"><input type="checkbox" name="faixaPreco" value="3" onchange="applyFilters()"> 💰💰💰 Sofisticado</label>
+          <label class="filter-option"><input type="checkbox" name="faixaPreco" value="4" onchange="applyFilters()"> 💰💰💰💰 Premium</label>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Aberto agora</div>
+          <label class="filter-option"><input type="checkbox" id="apenasAbertos" onchange="applyFilters()"> Apenas abertos</label>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Comodidades</div>
+          <label class="filter-option"><input type="checkbox" name="comodidade" value="Wi-Fi" onchange="applyFilters()"> Wi-Fi</label>
+          <label class="filter-option"><input type="checkbox" name="comodidade" value="Estacionamento" onchange="applyFilters()"> Estacionamento</label>
+          <label class="filter-option"><input type="checkbox" name="comodidade" value="Acessível" onchange="applyFilters()"> Acessível</label>
+          <label class="filter-option"><input type="checkbox" name="comodidade" value="Aceita reservas" onchange="applyFilters()"> Aceita reservas</label>
+        </div>
+
+        <button class="btn btn-primary btn-block mt-2" onclick="applyFilters()">
+          <i class="fa-solid fa-filter"></i> Aplicar filtros
+        </button>
+      </aside>
+
+      <!-- Results -->
+      <div>
+        <div class="results-header">
+          <div class="results-count"><strong id="resultCount">8</strong> restaurantes encontrados</div>
+          <div style="display:flex;gap:.75rem;align-items:center;">
+            <div class="view-toggle">
+              <button class="view-btn" id="viewList" onclick="setView('list')" title="Lista" aria-label="Visualização em lista"><i class="fa-solid fa-list"></i></button>
+              <button class="view-btn active" id="viewGrid" onclick="setView('grid')" title="Grade" aria-label="Visualização em grade"><i class="fa-solid fa-grip"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sort-bar">
+          <span class="sort-label">Ordenar por:</span>
+          <div class="sort-chips">
+            <button class="sort-chip active" data-ord="relevancia" onclick="sortBy(this)">Relevância</button>
+            <button class="sort-chip" data-ord="nota" onclick="sortBy(this)">Maior nota</button>
+            <button class="sort-chip" data-ord="avaliacoes" onclick="sortBy(this)">Mais avaliados</button>
+            <button class="sort-chip" data-ord="recentes" onclick="sortBy(this)">Mais recentes</button>
+          </div>
+        </div>
+
+        <!-- List view (hidden by default) -->
+        <div id="listView" style="display:none;"></div>
+
+        <!-- Grid view (default) -->
+        <div id="gridView">
+          <div class="grid-4" id="resultsGrid"></div>
+        </div>
+
+        <nav class="pagination" id="paginacao" aria-label="Paginação" style="display:none;"></nav>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../js/api.js"></script>
+<script>
+  // ── Estado ────────────────────────────────────────────────
+  let currentPage = 0;
+  let currentOrdem = 'relevancia';
+  let totalPages = 0;
+
+  // ── Inicialização ─────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    initNavbar();
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q') || '';
+    if (q) document.getElementById('mainSearch').value = q;
+    buscar();
+  });
+
+  // ── View (grid / lista) ───────────────────────────────────
+  function setView(v) {
+    if (v === 'list') {
+      document.getElementById('listView').style.display = 'block';
+      document.getElementById('gridView').style.display = 'none';
+      document.getElementById('viewList').classList.add('active');
+      document.getElementById('viewGrid').classList.remove('active');
+    } else {
+      document.getElementById('listView').style.display = 'none';
+      document.getElementById('gridView').style.display = 'block';
+      document.getElementById('viewList').classList.remove('active');
+      document.getElementById('viewGrid').classList.add('active');
+    }
+  }
+
+  // ── Filtros ───────────────────────────────────────────────
+  function toggleTodos(cb) {
+    if (cb.checked) {
+      document.querySelectorAll('input[name="categoria"]').forEach(el => el.checked = false);
+    }
+    buscar();
+  }
+
+  function updateRatingLabel(val) {
+    document.getElementById('ratingLabel').textContent = parseFloat(val).toFixed(1) + ' ★';
+  }
+
+  function applyFilters() {
+    currentPage = 0;
+    buscar();
+  }
+
+  function clearFilters() {
+    document.querySelectorAll('.filter-option input').forEach(cb => cb.checked = false);
+    document.getElementById('ratingFilter').value = 1;
+    updateRatingLabel(1);
+    document.getElementById('catTodos').checked = false;
+    currentPage = 0;
+    buscar();
+  }
+
+  function sortBy(btn) {
+    document.querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    currentOrdem = btn.dataset.ord;
+    currentPage = 0;
+    buscar();
+  }
+
+  function doSearch() {
+    currentPage = 0;
+    buscar();
+  }
+
+  // ── Coleta parâmetros e chama API ─────────────────────────
+  async function buscar() {
+    const termo = document.getElementById('mainSearch').value.trim();
+    const categorias = [...document.querySelectorAll('input[name="categoria"]:checked')].map(el => el.value);
+    const faixasPreco = [...document.querySelectorAll('input[name="faixaPreco"]:checked')].map(el => el.value);
+    const comodidades = [...document.querySelectorAll('input[name="comodidade"]:checked')].map(el => el.value);
+    const notaMinima = parseFloat(document.getElementById('ratingFilter').value);
+    const apenasAbertos = document.getElementById('apenasAbertos').checked;
+
+    const params = { page: currentPage, size: 12, ordenacao: currentOrdem };
+    if (termo) params.termo = termo;
+    if (categorias.length) params.categorias = categorias;
+    if (faixasPreco.length) params.faixasPreco = faixasPreco;
+    if (comodidades.length) params.comodidades = comodidades;
+    if (notaMinima > 1) params.notaMinima = notaMinima;
+    if (apenasAbertos) params.apenasAbertos = true;
+
+    setLoading(true);
+    try {
+      const data = await buscarRestaurantes(params);
+      const items = data.content ?? data;
+      totalPages = data.totalPages ?? 1;
+      const total = data.totalElements ?? items.length;
+
+      document.getElementById('resultCount').textContent = total;
+      renderCards(items);
+      renderPaginacao(data.number ?? currentPage, totalPages);
+    } catch (err) {
+      document.getElementById('resultsGrid').innerHTML =
+        '<p style="color:var(--gray-500);grid-column:1/-1;text-align:center;padding:2rem;">Erro ao carregar restaurantes.</p>';
+      document.getElementById('listView').innerHTML = '';
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function setLoading(on) {
+    const grid = document.getElementById('resultsGrid');
+    const list = document.getElementById('listView');
+    if (on) {
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-400);"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</p>';
+      list.innerHTML = '';
+    }
+  }
+
+  // ── Render grid ───────────────────────────────────────────
+  function renderCards(items) {
+    const grid = document.getElementById('resultsGrid');
+    const list = document.getElementById('listView');
+
+    if (!items.length) {
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-500);">Nenhum restaurante encontrado.</p>';
+      list.innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = items.map(r => cardHTML(r)).join('');
+    list.innerHTML = items.map(r => listItemHTML(r)).join('');
+  }
+
+  function cardHTML(r) {
+    const fotoEl = r.fotoUrl
+      ? `<img src="${r.fotoUrl}" alt="${r.nome}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<span style="font-size:2.5rem;">${categoriaEmoji(r.categoria)}</span>`;
+    return `
+      <article class="card restaurant-card">
+        <div class="card-img-placeholder">${fotoEl}</div>
+        <button class="fav-btn card-fav" onclick="toggleFav(event,this,${r.id})" aria-label="Favoritar ${r.nome}">
+          <i class="fa-solid fa-heart"></i>
+        </button>
+        <div class="card-body">
+          <div class="card-category">${r.categoria || ''}</div>
+          <h3 class="card-title"><a href="restaurante.html" onclick="sessionStorage.setItem('restauranteId','${r.id}')">${r.nome}</a></h3>
+          <p class="card-address"><i class="fa-solid fa-location-dot"></i> ${r.bairro || r.cidade || ''}</p>
+          <div class="card-footer">
+            <span class="stars stars-sm">${renderStars(r.mediaNote || 0)}</span>
+            <span class="rating-badge">${(r.mediaNote || 0).toFixed(1)}</span>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function listItemHTML(r) {
+    const fotoEl = r.fotoUrl
+      ? `<img src="${r.fotoUrl}" alt="${r.nome}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">`
+      : `<span style="font-size:1.8rem;">${categoriaEmoji(r.categoria)}</span>`;
+    return `
+      <article class="restaurant-list-item" onclick="sessionStorage.setItem('restauranteId','${r.id}');window.location.href='restaurante.html'">
+        <div class="rli-img">${fotoEl}</div>
+        <div class="rli-body">
+          <div class="rli-cat">${r.categoria || ''}</div>
+          <div class="rli-name">${r.nome}</div>
+          <div class="rli-address"><i class="fa-solid fa-location-dot"></i> ${r.bairro || ''}, ${r.cidade || ''}</div>
+          <div class="rli-meta">
+            <span class="rli-rating"><i class="fa-solid fa-star" style="color:var(--orange);"></i> ${(r.mediaNote || 0).toFixed(1)} (${r.totalAvaliacoes || 0})</span>
+            <span>${faixaPrecoLabel(r.faixaPreco)}</span>
+          </div>
+        </div>
+        <div class="rli-side">
+          <span class="rating-badge">${(r.mediaNote || 0).toFixed(1)}</span>
+          <button class="fav-btn" onclick="toggleFav(event,this,${r.id})" aria-label="Favoritar">
+            <i class="fa-solid fa-heart"></i>
+          </button>
+        </div>
+      </article>`;
+  }
+
+  // ── Paginação ─────────────────────────────────────────────
+  function renderPaginacao(page, total) {
+    const nav = document.getElementById('paginacao');
+    if (total <= 1) { nav.style.display = 'none'; return; }
+    nav.style.display = 'flex';
+    let html = '';
+    html += `<a href="#" onclick="goPage(event,${page-1})" ${page===0?'style="opacity:.4;pointer-events:none;"':''}><i class="fa-solid fa-chevron-left"></i></a>`;
+    for (let i = 0; i < total; i++) {
+      if (total > 7 && i > 1 && i < total-1 && Math.abs(i - page) > 1) {
+        if (i === 2 || i === total-2) html += '<span class="dots">…</span>';
+        continue;
+      }
+      html += `<a href="#" onclick="goPage(event,${i})" ${i===page?'class="active"':''}>${i+1}</a>`;
+    }
+    html += `<a href="#" onclick="goPage(event,${page+1})" ${page===total-1?'style="opacity:.4;pointer-events:none;"':''}><i class="fa-solid fa-chevron-right"></i></a>`;
+    nav.innerHTML = html;
+  }
+
+  function goPage(e, p) {
+    e.preventDefault();
+    if (p < 0 || p >= totalPages) return;
+    currentPage = p;
+    buscar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Favoritar ─────────────────────────────────────────────
+  async function toggleFav(e, btn, id) {
+    e.stopPropagation();
+    if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+    try {
+      await favoritarRestaurante(id);
+      btn.classList.toggle('active');
+    } catch (err) {
+      showToast('Erro ao favoritar.', 'error');
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function categoriaEmoji(cat) {
+    const map = { 'Italiano':'🍝','Japonês':'🍣','Pizzaria':'🍕','Churrascaria':'🥩','Café':'☕','Vegetariano':'🥗','Americano':'🍔','Mexicano':'🌮','Frutos do Mar':'🦞','Chinês':'🥡' };
+    return map[cat] || '🍽️';
+  }
+
+  function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info' };
+    t.innerHTML = `<i class="fa-solid ${icons[type]||'fa-circle-info'}"></i> ${msg}`;
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastrar restaurante — BiteRate</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { background: var(--gray-100); min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; padding: 2.5rem 0 3.5rem; }
+
+    .page-header {
+      background: linear-gradient(135deg, var(--purple) 0%, #7a1060 100%);
+      color: var(--white); padding: 2.5rem 0;
+      margin-bottom: 2rem;
+    }
+    .page-header h1 { font-size: 1.75rem; font-weight: 900; margin-bottom: .3rem; }
+    .page-header p { opacity: .85; font-size: .95rem; }
+
+    .form-card {
+      background: var(--white); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .form-card-header {
+      background: var(--cream-light); border-bottom: 1px solid var(--gray-200);
+      padding: 1.1rem 1.5rem; display: flex; align-items: center; gap: .7rem;
+    }
+    .form-card-header h2 { font-size: 1rem; font-weight: 700; color: var(--purple); margin: 0; }
+    .form-card-header i { color: var(--orange); font-size: 1rem; }
+    .form-card-body { padding: 1.5rem; }
+
+    /* Category selector */
+    .category-select-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: .6rem; margin-bottom: .75rem;
+    }
+    .cat-option {
+      border: 2px solid var(--gray-200); border-radius: var(--radius);
+      padding: .75rem .5rem; text-align: center; cursor: pointer;
+      transition: all var(--transition); font-size: .8rem; font-weight: 600;
+      color: var(--gray-600);
+    }
+    .cat-option:hover { border-color: var(--orange); color: var(--orange); }
+    .cat-option.selected { border-color: var(--orange); background: rgba(249,69,0,.06); color: var(--orange); }
+    .cat-option .cat-emoji { font-size: 1.5rem; display: block; margin-bottom: .3rem; }
+
+    /* Phone mask */
+    /* Hours table */
+    .hours-table { width: 100%; border-collapse: collapse; }
+    .hours-table th, .hours-table td { padding: .5rem .75rem; font-size: .85rem; }
+    .hours-table th { text-align: left; color: var(--gray-600); font-weight: 600; border-bottom: 1px solid var(--gray-200); }
+    .hours-table tr.closed td { opacity: .45; }
+    .hours-row-toggle { accent-color: var(--orange); }
+    .hours-table td input[type="time"] {
+      border: 1.5px solid var(--gray-200); border-radius: 6px; padding: .35rem .5rem;
+      font-size: .85rem; outline: none;
+    }
+    .hours-table td input[type="time"]:focus { border-color: var(--orange); }
+    .hours-table tr:last-child td { border-bottom: none; }
+    .hours-table tbody tr td { border-bottom: 1px solid var(--gray-100); }
+
+    /* Step indicator */
+    .step-indicator {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 2rem; overflow-x: auto;
+    }
+    .step {
+      display: flex; align-items: center; gap: .5rem; flex-shrink: 0;
+    }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--gray-200); color: var(--gray-600);
+      font-weight: 800; font-size: .85rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition);
+    }
+    .step.active .step-num { background: var(--orange); color: var(--white); }
+    .step.done .step-num { background: #22c55e; color: var(--white); }
+    .step-label { font-size: .82rem; font-weight: 600; color: var(--gray-400); }
+    .step.active .step-label { color: var(--orange); }
+    .step.done .step-label { color: #166534; }
+    .step-line { flex: 1; height: 2px; background: var(--gray-200); min-width: 24px; }
+    .step-line.done { background: #22c55e; }
+
+    .form-actions { display: flex; gap: .75rem; justify-content: flex-end; flex-wrap: wrap; }
+
+    @media(max-width:600px) {
+      .category-select-grid { grid-template-columns: repeat(3,1fr); }
+      .form-card-body { padding: 1rem; }
+      .form-actions { flex-direction: column; }
+      .form-actions .btn { width: 100%; justify-content: center; }
+    }
+    @media(max-width:420px) {
+      .category-select-grid { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="navbar-logo" href="../index.html">
+      <div class="logo-mark">B</div>
+            <span class="logo-text">bite<span>rate</span>.</span>
+    </a>
+    <div class="navbar-search">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="search" placeholder="Pesquisar restaurantes...">
+    </div>
+    <div class="navbar-actions">
+      <div class="nav-avatar" onclick="window.location.href='perfil.html'" title="Meu perfil">F</div>
+    </div>
+  </div>
+</nav>
+
+<!-- Page header -->
+<div class="page-header">
+  <div class="container">
+    <nav style="font-size:.82rem;color:rgba(255,255,255,.65);margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;">
+      <a href="../index.html" style="color:var(--cream);">Início</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:.6rem;"></i>
+      <span>Cadastrar restaurante</span>
+    </nav>
+    <h1><i class="fa-solid fa-utensils"></i> Cadastrar um restaurante</h1>
+    <p>Adicione um restaurante que ainda não está na plataforma e ajude a comunidade.</p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+
+    <!-- Step indicator -->
+    <div class="step-indicator" aria-label="Progresso do cadastro">
+      <div class="step active" id="step1">
+        <div class="step-num">1</div>
+        <div class="step-label">Básico</div>
+      </div>
+      <div class="step-line" id="line1"></div>
+      <div class="step active" id="step2">
+        <div class="step-num">2</div>
+        <div class="step-label">Endereço</div>
+      </div>
+      <div class="step-line" id="line2"></div>
+      <div class="step active" id="step3">
+        <div class="step-num">3</div>
+        <div class="step-label">Detalhes</div>
+      </div>
+      <div class="step-line" id="line3"></div>
+      <div class="step active" id="step4">
+        <div class="step-num">4</div>
+        <div class="step-label">Horários</div>
+      </div>
+    </div>
+
+    <form id="cadastroForm" novalidate onsubmit="submitForm(event)">
+
+      <!-- SECTION 1: Basic info -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <i class="fa-solid fa-store"></i>
+          <h2>Informações básicas</h2>
+        </div>
+        <div class="form-card-body">
+          <div class="form-group">
+            <label class="form-label" for="nomeRestaurante">Nome do restaurante <span style="color:var(--orange);">*</span></label>
+            <input class="form-control" type="text" id="nomeRestaurante" name="nome"
+                   placeholder="Ex: Cantina Romana" required maxlength="100">
+            <span class="form-error">Informe o nome do restaurante.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Categoria <span style="color:var(--orange);">*</span></label>
+            <input type="hidden" id="categoriaHidden" name="categoria" required>
+            <div class="category-select-grid" role="radiogroup" aria-label="Selecionar categoria">
+              <div class="cat-option" onclick="selectCat(this,'Italiano')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🍝</span>Italiano
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Japonês')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🍣</span>Japonês
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Pizzaria')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🍕</span>Pizzaria
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Churrascaria')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🥩</span>Churrasco
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Café')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">☕</span>Café
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Vegetariano')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🥗</span>Vegetariano
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Fast Food')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🍔</span>Fast Food
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Frutos do Mar')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🦞</span>Frutos do Mar
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Padaria')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🥐</span>Padaria
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Brasileiro')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🍲</span>Brasileiro
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Bar')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🍻</span>Bar
+              </div>
+              <div class="cat-option" onclick="selectCat(this,'Outro')" tabindex="0" role="radio" aria-checked="false">
+                <span class="cat-emoji">🍽️</span>Outro
+              </div>
+            </div>
+            <span class="form-error" id="catError" style="display:none;">Selecione uma categoria.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="descricao">Descrição <span style="color:var(--gray-400);font-weight:400;">(opcional)</span></label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="3"
+                      placeholder="Breve descrição do restaurante..." maxlength="500"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="faixaPreco">Faixa de preço</label>
+              <select class="form-control" id="faixaPreco" name="faixaPreco">
+                <option value="">Selecione...</option>
+                <option value="1">💰 Econômico (até R$30)</option>
+                <option value="2">💰💰 Moderado (R$30–70)</option>
+                <option value="3">💰💰💰 Sofisticado (R$70–150)</option>
+                <option value="4">💰💰💰💰 Premium (acima R$150)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="fotoUrl">URL da foto <span style="color:var(--gray-400);font-weight:400;">(opcional)</span></label>
+              <input class="form-control" type="url" id="fotoUrl" name="fotoUrl" placeholder="https://exemplo.com/foto.jpg">
+              <span class="form-hint" style="font-size:.8rem;color:var(--gray-400);">Cole o link de uma imagem para usar como capa do restaurante.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Address -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <i class="fa-solid fa-location-dot"></i>
+          <h2>Endereço</h2>
+        </div>
+        <div class="form-card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="cep">CEP <span style="color:var(--orange);">*</span></label>
+              <input class="form-control" type="text" id="cep" name="cep"
+                     placeholder="00000-000" required maxlength="9"
+                     oninput="maskCep(this)" onblur="buscarCep(this.value)">
+              <span class="form-error">CEP inválido.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="estado">Estado <span style="color:var(--orange);">*</span></label>
+              <select class="form-control" id="estado" name="estado" required>
+                <option value="">Selecione...</option>
+                <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+                <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+                <option>GO</option><option>MA</option><option selected>MS</option><option>MT</option>
+                <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+                <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+                <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+                <option>SP</option><option>SE</option><option>TO</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="rua">Rua / Avenida <span style="color:var(--orange);">*</span></label>
+              <input class="form-control" type="text" id="rua" name="rua" placeholder="Ex: Av. Afonso Pena" required>
+              <span class="form-error">Informe o logradouro.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="numero">Número <span style="color:var(--orange);">*</span></label>
+              <input class="form-control" type="text" id="numero" name="numero" placeholder="1234" required>
+              <span class="form-error">Informe o número.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="bairro">Bairro <span style="color:var(--orange);">*</span></label>
+              <input class="form-control" type="text" id="bairro" name="bairro" placeholder="Ex: Centro" required>
+              <span class="form-error">Informe o bairro.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cidade">Cidade <span style="color:var(--orange);">*</span></label>
+              <input class="form-control" type="text" id="cidade" name="cidade" placeholder="Ex: Campo Grande" required>
+              <span class="form-error">Informe a cidade.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="complemento">Complemento</label>
+            <input class="form-control" type="text" id="complemento" name="complemento" placeholder="Sala 101, 2º andar...">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Details -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <i class="fa-solid fa-circle-info"></i>
+          <h2>Informações adicionais</h2>
+        </div>
+        <div class="form-card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="telefone">Telefone</label>
+              <input class="form-control" type="tel" id="telefone" name="telefone"
+                     placeholder="(67) 99999-9999" maxlength="15"
+                     oninput="maskPhone(this)">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="capacidade">Capacidade</label>
+              <input class="form-control" type="number" id="capacidade" name="capacidade"
+                     placeholder="Ex: 80 pessoas" min="1" max="10000">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Comodidades</label>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+              <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer;padding:.4rem .8rem;border:1.5px solid var(--gray-200);border-radius:20px;transition:all .2s;" class="amenity-tag">
+                <input type="checkbox" name="comodidades" value="wifi" style="accent-color:var(--orange);"> Wi-Fi
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer;padding:.4rem .8rem;border:1.5px solid var(--gray-200);border-radius:20px;transition:all .2s;" class="amenity-tag">
+                <input type="checkbox" name="comodidades" value="estacionamento" style="accent-color:var(--orange);"> Estacionamento
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer;padding:.4rem .8rem;border:1.5px solid var(--gray-200);border-radius:20px;transition:all .2s;" class="amenity-tag">
+                <input type="checkbox" name="comodidades" value="acessivel" style="accent-color:var(--orange);"> Acessível
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer;padding:.4rem .8rem;border:1.5px solid var(--gray-200);border-radius:20px;transition:all .2s;" class="amenity-tag">
+                <input type="checkbox" name="comodidades" value="reserva" style="accent-color:var(--orange);"> Aceita reservas
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer;padding:.4rem .8rem;border:1.5px solid var(--gray-200);border-radius:20px;transition:all .2s;" class="amenity-tag">
+                <input type="checkbox" name="comodidades" value="ar" style="accent-color:var(--orange);"> Ar-condicionado
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer;padding:.4rem .8rem;border:1.5px solid var(--gray-200);border-radius:20px;transition:all .2s;" class="amenity-tag">
+                <input type="checkbox" name="comodidades" value="delivery" style="accent-color:var(--orange);"> Delivery
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer;padding:.4rem .8rem;border:1.5px solid var(--gray-200);border-radius:20px;transition:all .2s;" class="amenity-tag">
+                <input type="checkbox" name="comodidades" value="live" style="accent-color:var(--orange);"> Música ao vivo
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Hours -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <i class="fa-solid fa-clock"></i>
+          <h2>Horários de funcionamento</h2>
+        </div>
+        <div class="form-card-body">
+          <table class="hours-table" aria-label="Horários de funcionamento por dia da semana">
+            <thead>
+              <tr>
+                <th style="width:40px;"></th>
+                <th>Dia</th>
+                <th>Abertura</th>
+                <th>Fechamento</th>
+              </tr>
+            </thead>
+            <tbody id="hoursTable">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="../index.html" class="btn btn-outline">
+          <i class="fa-solid fa-arrow-left"></i> Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary btn-lg" id="cadastrarBtn">
+          <i class="fa-solid fa-store"></i> Cadastrar restaurante
+        </button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+
+<script src="../js/api.js"></script>
+<script>
+  // Redireciona para login se não estiver autenticado
+  document.addEventListener('DOMContentLoaded', () => { requireAuth(); });
+
+  // Build hours table
+  const days = [
+    { key:'seg', label:'Segunda-feira', defaultOpen:'11:00', defaultClose:'22:00', active:true },
+    { key:'ter', label:'Terça-feira',   defaultOpen:'11:00', defaultClose:'22:00', active:true },
+    { key:'qua', label:'Quarta-feira',  defaultOpen:'11:00', defaultClose:'22:00', active:true },
+    { key:'qui', label:'Quinta-feira',  defaultOpen:'11:00', defaultClose:'22:00', active:true },
+    { key:'sex', label:'Sexta-feira',   defaultOpen:'11:00', defaultClose:'23:00', active:true },
+    { key:'sab', label:'Sábado',        defaultOpen:'12:00', defaultClose:'23:00', active:true },
+    { key:'dom', label:'Domingo',       defaultOpen:'12:00', defaultClose:'21:00', active:false },
+  ];
+
+  const tbody = document.getElementById('hoursTable');
+  days.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.id = 'row_'+d.key;
+    if (!d.active) tr.classList.add('closed');
+    tr.innerHTML = `
+      <td><input type="checkbox" class="hours-row-toggle" ${d.active?'checked':''} onchange="toggleDay('${d.key}',this)" aria-label="Aberto na ${d.label}"></td>
+      <td style="font-weight:600;font-size:.88rem;">${d.label}</td>
+      <td><input type="time" name="open_${d.key}" value="${d.defaultOpen}" ${d.active?'':'disabled'} aria-label="Horário de abertura ${d.label}"></td>
+      <td><input type="time" name="close_${d.key}" value="${d.defaultClose}" ${d.active?'':'disabled'} aria-label="Horário de fechamento ${d.label}"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  function toggleDay(key, cb) {
+    const row = document.getElementById('row_'+key);
+    const inputs = row.querySelectorAll('input[type="time"]');
+    if (cb.checked) {
+      row.classList.remove('closed');
+      inputs.forEach(i => i.disabled = false);
+    } else {
+      row.classList.add('closed');
+      inputs.forEach(i => i.disabled = true);
+    }
+  }
+
+  // Category select
+  function selectCat(el, val) {
+    document.querySelectorAll('.cat-option').forEach(o => { o.classList.remove('selected'); o.setAttribute('aria-checked','false'); });
+    el.classList.add('selected');
+    el.setAttribute('aria-checked','true');
+    document.getElementById('categoriaHidden').value = val;
+  }
+
+  // Masks
+  function maskCep(el) {
+    let v = el.value.replace(/\D/g,'');
+    if (v.length > 5) v = v.slice(0,5)+'-'+v.slice(5,8);
+    el.value = v;
+  }
+  function maskPhone(el) {
+    let v = el.value.replace(/\D/g,'');
+    if (v.length > 10) v = '('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7,11);
+    else if (v.length > 6) v = '('+v.slice(0,2)+') '+v.slice(2,6)+'-'+v.slice(6);
+    else if (v.length > 2) v = '('+v.slice(0,2)+') '+v.slice(2);
+    else if (v.length > 0) v = '('+v;
+    el.value = v;
+  }
+
+  /* ─── BUSCA DE CEP (API pública ViaCEP) ─── */
+  function buscarCep(cep) {
+    const c = cep.replace(/\D/g,'');
+    if (c.length !== 8) return;
+    fetch('https://viacep.com.br/ws/' + c + '/json/')
+      .then(r => r.json())
+      .then(data => {
+        if (data.erro) { showToast('CEP não encontrado.', 'error'); return; }
+        if (!document.getElementById('rua').value)    document.getElementById('rua').value    = data.logradouro || '';
+        if (!document.getElementById('bairro').value) document.getElementById('bairro').value = data.bairro      || '';
+        if (!document.getElementById('cidade').value) document.getElementById('cidade').value  = data.localidade  || '';
+        const estadoEl = document.getElementById('estado');
+        if (estadoEl && data.uf) estadoEl.value = data.uf;
+      })
+      .catch(() => showToast('Não foi possível consultar o CEP.', 'error'));
+  }
+
+  // Amenity tag styles
+  document.querySelectorAll('.amenity-tag input').forEach(cb => {
+    cb.addEventListener('change', function() {
+      this.parentElement.style.borderColor = this.checked ? 'var(--orange)' : 'var(--gray-200)';
+      this.parentElement.style.background = this.checked ? 'rgba(249,69,0,.06)' : '';
+      this.parentElement.style.color = this.checked ? 'var(--orange)' : '';
+    });
+  });
+
+  // Submit
+  async function submitForm(e) {
+    e.preventDefault();
+    requireAuth();
+    const form = e.target;
+    let valid = true;
+
+    form.querySelectorAll('.form-control').forEach(el => el.classList.remove('invalid'));
+    document.getElementById('catError').style.display = 'none';
+
+    const required = ['nomeRestaurante','cep','rua','numero','bairro','cidade'];
+    required.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) { el.classList.add('invalid'); valid = false; }
+    });
+
+    if (!document.getElementById('categoriaHidden').value) {
+      document.getElementById('catError').style.display = 'block';
+      valid = false;
+    }
+
+    // Validate fotoUrl (optional but must be a valid URL if filled)
+    const fotoUrlEl = document.getElementById('fotoUrl');
+    const fotoUrlVal = fotoUrlEl ? fotoUrlEl.value.trim() : '';
+    if (fotoUrlVal) {
+      try { new URL(fotoUrlVal); } catch (_) {
+        fotoUrlEl.classList.add('invalid');
+        showToast('URL da foto inválida. Use o formato https://...', 'error');
+        valid = false;
+      }
+    }
+
+    if (!valid) {
+      showToast('Preencha todos os campos obrigatórios.', 'error');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Build horarios array
+    const horarios = days.map(d => {
+      const row = document.getElementById('row_' + d.key);
+      const cb = row.querySelector('input[type="checkbox"]');
+      const aberto = cb.checked;
+      const abertura = form['open_' + d.key] ? form['open_' + d.key].value : null;
+      const fechamento = form['close_' + d.key] ? form['close_' + d.key].value : null;
+      return {
+        dia: d.key,
+        aberto,
+        horaAbertura: aberto ? abertura : null,
+        horaFechamento: aberto ? fechamento : null
+      };
+    });
+
+    // Build comodidades CSV
+    const comodidades = [...form.querySelectorAll('input[name="comodidades"]:checked')]
+      .map(cb => cb.value).join(',');
+
+    const capacidadeVal = form.capacidade.value;
+    const payload = {
+      nome: form.nomeRestaurante.value.trim(),
+      categoria: document.getElementById('categoriaHidden').value,
+      descricao: form.descricao.value.trim() || null,
+      faixaPreco: form.faixaPreco.value || null,
+      fotoUrl: form.fotoUrl.value.trim() || null,
+      cep: form.cep.value.trim(),
+      estado: form.estado.value,
+      rua: form.rua.value.trim(),
+      numero: form.numero.value.trim(),
+      bairro: form.bairro.value.trim(),
+      cidade: form.cidade.value.trim(),
+      complemento: form.complemento.value.trim() || null,
+      telefone: form.telefone.value.trim() || null,
+      capacidade: capacidadeVal ? parseInt(capacidadeVal) : null,
+      comodidades: comodidades || null,
+      horarios
+    };
+
+    const btn = document.getElementById('cadastrarBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cadastrando...';
+
+    try {
+      const result = await apiRequest('POST', '/api/restaurantes', payload, true);
+      showToast('Restaurante cadastrado com sucesso!', 'success');
+      setTimeout(() => { window.location.href = 'restaurante.html?id=' + result.id; }, 1500);
+    } catch (err) {
+      showToast(err.message || 'Erro ao cadastrar restaurante.', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-store"></i> Cadastrar restaurante';
+    }
+  }
+
+  function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info' };
+    t.innerHTML = `<i class="fa-solid ${icons[type]||'fa-circle-info'}"></i> ${msg}`;
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+</script>
+</body>
+</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                        

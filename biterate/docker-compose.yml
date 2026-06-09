@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: biterate_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_senha
+      MYSQL_DATABASE: biterate_db
+      MYSQL_USER: biterate_user
+      MYSQL_PASSWORD: biterate_senha
+    ports:
+      - "3306:3306"
+    volumes:
+      - biterate_db_data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: biterate_app
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/biterate_db?useSSL=false&serverTimezone=America/Sao_Paulo&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: biterate_user
+      SPRING_DATASOURCE_PASSWORD: biterate_senha
+      JWT_SECRET: bml0ZXJhdGVfc2VjcmV0X2tleV9zdXBlcl9zZWd1cmFfMjAyNQ==
+      JWT_EXPIRATION: 86400000
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: biterate_phpmyadmin
+    restart: always
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    ports:
+      - "8081:80"
+
+volumes:
+  biterate_db_data:

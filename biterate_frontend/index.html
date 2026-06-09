@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BiteRate — Avalie cada mordida</title>
+  <meta name="description" content="Descubra e avalie os melhores restaurantes da sua cidade. Compartilhe experiências gastronômicas com BiteRate.">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Font Awesome (ícones) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* ── Seção creme ── */
+    .section-cream { background: var(--cream-light); }
+
+    /* ── Hero override ── */
+    .hero { min-height: 460px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35);
+      border-radius: 20px; padding: .3rem .85rem;
+      font-size: .82rem; font-weight: 600; color: var(--cream);
+      margin-bottom: .9rem;
+    }
+
+    /* ── Ranking strip ── */
+    .ranking-strip {
+      background: var(--orange);
+      color: var(--white);
+      padding: .6rem 0;
+      overflow: hidden;
+    }
+    .ranking-strip-inner {
+      display: flex; align-items: center; gap: 2.5rem;
+      white-space: nowrap; animation: ticker 30s linear infinite;
+    }
+    .ranking-strip-inner span { font-size: .82rem; font-weight: 600; }
+    .ranking-strip-inner .medal { font-size: .9rem; }
+    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+    /* ── Category pills ── */
+    .category-pills {
+      display: flex; gap: .65rem; flex-wrap: wrap; margin-bottom: 2rem;
+    }
+    .pill {
+      padding: .45rem 1.1rem; border-radius: 24px; font-size: .85rem; font-weight: 600;
+      border: 2px solid var(--gray-200); color: var(--gray-600); cursor: pointer;
+      transition: all var(--transition);
+    }
+    .pill:hover, .pill.active { border-color: var(--orange); color: var(--orange); background: rgba(249,69,0,.06); }
+
+    /* ── Restaurante card favorite btn ── */
+    .fav-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,.9);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; color: var(--gray-400);
+      transition: color var(--transition), background var(--transition);
+      box-shadow: 0 1px 4px rgba(0,0,0,.12);
+    }
+    .fav-btn:hover, .fav-btn.active { color: var(--orange); background: var(--white); }
+    .card-fav { position: absolute; top: .7rem; right: .7rem; }
+
+    .restaurant-card { position: relative; }
+
+    /* ── Stats banner ── */
+    .stats-banner {
+      background: var(--purple);
+      color: var(--white);
+      padding: 2.5rem 0;
+    }
+    .stats-grid {
+      display: flex; justify-content: center; gap: 4rem; text-align: center;
+    }
+    .stat-item .stat-n { font-size: 2.2rem; font-weight: 900; color: var(--orange); }
+    .stat-item .stat-l { font-size: .85rem; opacity: .8; margin-top: .15rem; }
+
+    @media(max-width:768px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:480px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+
+
+<!-- ═══════════ NAVBAR ═══════════ -->
+<nav class="navbar" role="navigation" aria-label="Navegação principal">
+  <div class="navbar-inner">
+    <a class="navbar-logo" href="index.html" aria-label="BiteRate - Página inicial">
+      <div class="logo-mark">B</div>
+      <span class="logo-text">bite<span>rate</span>.</span>
+    </a>
+
+    <div class="navbar-search">
+      <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
+      <input type="search" placeholder="Pesquisar restaurantes..." aria-label="Buscar restaurantes"
+             onkeydown="if(event.key==='Enter') window.location.href='pages/buscar.html?q='+encodeURIComponent(this.value)">
+    </div>
+
+    <div class="navbar-actions">
+      <a href="pages/buscar.html" class="nav-icon-btn" title="Buscar" aria-label="Buscar">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      </a>
+      <div class="nav-avatar" title="Perfil" aria-label="Perfil">?</div>
+      <a href="pages/login.html" class="nav-btn-login nav-auth-btn" style="border-radius:8px;padding:.4rem 1.1rem;font-weight:600;font-size:.85rem;">
+        Entrar
+      </a>
+    </div>
+
+    <button class="nav-toggle" aria-label="Abrir menu" onclick="document.querySelector('.mobile-menu').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" style="display:none;" id="mobileMenu">
+    <div style="padding:1rem 1.5rem; background:rgba(0,0,0,.15); display:flex; flex-direction:column; gap:.75rem;">
+      <div style="position:relative;">
+        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.6);font-size:.85rem;"></i>
+        <input type="search" placeholder="Buscar restaurantes..." style="width:100%;padding:.5rem 1rem .5rem 2.4rem;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:.9rem;outline:none;">
+      </div>
+      <a href="pages/login.html" class="nav-auth-btn" style="color:#fff;font-size:.9rem;">Entrar</a>
+      <a href="pages/register.html" class="nav-auth-btn" style="color:#fff;font-size:.9rem;">Cadastrar</a>
+      <a href="pages/perfil.html" class="nav-loggedin-btn" style="color:#fff;font-size:.9rem;display:none;">Meu perfil</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ RANKING STRIP ═══════════ -->
+<div class="ranking-strip" aria-hidden="true">
+  <div class="container" style="overflow:hidden;">
+    <div class="ranking-strip-inner" id="ticker"></div>
+  </div>
+</div>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero" aria-label="Destaque">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="container">
+    <div class="hero-content" style="text-align:center;align-items:center;">
+      <div class="hero-badge"><i class="fa-solid fa-star" aria-hidden="true"></i>
+        <span id="heroBadgeCount">Mais de 1.200 restaurantes avaliados</span>
+      </div>
+      <h1>Descubra lugares que valem a mordida</h1>
+      <p>Avalie, compartilhe e encontre as melhores experiências gastronômicas da sua cidade.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ RESTAURANTES POPULARES ═══════════ -->
+<section class="section" aria-labelledby="popular-title">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <h2 class="section-title" id="popular-title" >Restaurantes Populares
+      </h2>
+      <a href="pages/buscar.html" style="font-size:.88rem;color:var(--orange);font-weight:600;">
+        Ver todos <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </div>
+
+    <!-- Category filter -->
+    <div class="category-pills" role="group" aria-label="Filtrar por categoria">
+      <button class="pill active" data-cat="" onclick="filterCategory(this)">Todos</button>
+      <button class="pill" data-cat="Pizzaria" onclick="filterCategory(this)">🍕 Pizza</button>
+      <button class="pill" data-cat="Japonês" onclick="filterCategory(this)">🍱 Japonês</button>
+      <button class="pill" data-cat="Churrascaria" onclick="filterCategory(this)">🥩 Churrasco</button>
+      <button class="pill" data-cat="Café" onclick="filterCategory(this)">☕ Café</button>
+      <button class="pill" data-cat="Vegetariano" onclick="filterCategory(this)">🥗 Vegetariano</button>
+      <button class="pill" data-cat="Italiano" onclick="filterCategory(this)">🍝 Italiano</button>
+    </div>
+
+    <div class="grid-4" id="restaurantsGrid">
+      <p style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-400);"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</p>
+    </div>
+    <nav class="pagination" id="indexPaginacao" aria-label="Paginação de restaurantes" style="display:none;"></nav>
+  </div>
+</section>
+
+<!-- ═══════════ STATS BANNER ═══════════ -->
+<div class="stats-banner" aria-label="Estatísticas da plataforma">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-n" id="counterRestaurantes">0</div>
+        <div class="stat-l">Restaurantes cadastrados</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-n" id="counterAvaliacoes">0</div>
+        <div class="stat-l">Avaliações publicadas</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ AVALIAÇÕES RECENTES ═══════════ -->
+<section class="section section-cream" aria-labelledby="reviews-title">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <h2 class="section-title" id="reviews-title" >Avaliações Recentes
+      </h2>
+
+    </div>
+
+    <div class="grid-3" id="recentReviewsGrid">
+      <p style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-400);"><i class="fa-solid fa-spinner fa-spin"></i></p>
+    </div>
+
+        <!-- CTA cadastrar avaliação -->
+    <div style="text-align:center;margin-top:2.5rem;">
+      <p style="color:var(--gray-600);margin-bottom:1rem;">Já foi a algum restaurante? Compartilhe sua experiência!</p>
+      <a href="pages/avaliar.html" class="btn btn-primary btn-lg">
+        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Escrever uma avaliação
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CTA CADASTRAR RESTAURANTE ═══════════ -->
+<section style="background:var(--cream);padding:3rem 0;" aria-labelledby="cta-title">
+  <div class="container" style="text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:.75rem;" aria-hidden="true">🍴</div>
+    <h2 id="cta-title" style="color:var(--purple);margin-bottom:.75rem;">Seu restaurante não está aqui?</h2>
+    <p style="color:var(--gray-600);max-width:480px;margin:0 auto 1.75rem;">Cadastre-o na plataforma e ajude outros usuários a descobrir novos lugares incríveis.</p>
+    <a href="pages/cadastrar-restaurante.html" class="btn btn-primary btn-lg">
+      <i class="fa-solid fa-plus" aria-hidden="true"></i> Cadastrar restaurante
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo-text">bite<span>rate</span>.</div>
+        <p>Descubra e avalie os melhores restaurantes. Compartilhe experiências, ajude a comunidade a comer melhor.</p>
+        <div class="social-links" aria-label="Redes sociais">
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+          <a href="#" aria-label="Twitter/X"><i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a>
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Site</h4>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="pages/buscar.html">Restaurantes</a></li>
+          <li><a href="pages/buscar.html?tipo=avaliacoes">Avaliações</a></li>
+          <li><a href="pages/cadastrar-restaurante.html">Cadastrar restaurante</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Conta</h4>
+        <ul>
+          <li><a href="pages/login.html">Entrar</a></li>
+          <li><a href="pages/register.html">Cadastrar</a></li>
+          <li><a href="pages/perfil.html">Meu perfil</a></li>
+          <li><a href="pages/avaliar.html">Escrever avaliação</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Suporte</h4>
+        <ul>
+          <li><a href="#">Ajuda</a></li>
+          <li><a href="#">Contato</a></li>
+          <li><a href="#">Termos de uso</a></li>
+          <li><a href="#">Privacidade</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="js/api.js"></script>
+<script>
+  // ── Init ──────────────────────────────────────────────────
+  let currentPage = 0;
+  let totalPages = 0;
+  let currentCategory = '';
+  let favoritosSet = new Set();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initNavbar();
+    if (isLoggedIn()) carregarFavoritosSet().then(() => buscarRestaurantes_index());
+    else buscarRestaurantes_index();
+    carregarAvaliacoesRecentes();
+    carregarRanking();
+  });
+
+  // ── Favoritos set ────────────────────────────────────────
+  async function carregarFavoritosSet() {
+    try {
+      const favs = await getMeusFavoritos();
+      const items = favs.content ?? favs;
+      favoritosSet = new Set((Array.isArray(items) ? items : []).map(r => r.id));
+    } catch {}
+  }
+
+  // ── Busca de restaurantes ─────────────────────────────────
+  async function buscarRestaurantes_index(page) {
+    page = page ?? currentPage;
+    const params = { page, size: 8, ordenacao: 'nota' };
+    if (currentCategory) params.categorias = [currentCategory];
+    setGridLoading(true);
+    try {
+      const data = await buscarRestaurantes(params);
+      const items = data.content ?? data;
+      totalPages = data.totalPages ?? 1;
+      currentPage = data.number ?? page;
+      renderRestaurantsGrid(items);
+      renderPaginacaoIndex(currentPage, totalPages);
+      // atualiza badge e contador com total real
+      const total = data.totalElements ?? items.length;
+      const badge = document.getElementById('heroBadgeCount');
+      if (badge) badge.textContent = total > 1 ? `Mais de ${total - 1} restaurantes avaliados` : `${total} restaurante${total !== 1 ? 's' : ''} cadastrado${total !== 1 ? 's' : ''}`;
+      const cR = document.getElementById('counterRestaurantes');
+      if (cR) cR.textContent = total;
+      // total de avaliações = soma de totalAvaliacoes dos cards
+      const totalAvs = items.reduce((s, r) => s + (r.totalAvaliacoes || 0), 0);
+      const cA = document.getElementById('counterAvaliacoes');
+      if (cA && totalAvs > 0) cA.textContent = totalAvs;
+    } catch {
+      document.getElementById('restaurantsGrid').innerHTML =
+        '<p style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-500);">Erro ao carregar restaurantes.</p>';
+    }
+  }
+
+  function setGridLoading(on) {
+    if (on) document.getElementById('restaurantsGrid').innerHTML =
+      '<p style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-400);"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</p>';
+  }
+
+  function renderRestaurantsGrid(items) {
+    const grid = document.getElementById('restaurantsGrid');
+    if (!items.length) {
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-500);">Nenhum restaurante encontrado.</p>';
+      return;
+    }
+    grid.innerHTML = items.map(r => {
+      const emoji = categoriaEmoji(r.categoria);
+      const fotoEl = r.fotoUrl ? `<img src="${r.fotoUrl}" alt="${r.nome}" style="width:100%;height:100%;object-fit:cover;">` : emoji;
+      return `<article class="card restaurant-card" onclick="sessionStorage.setItem('restauranteId','${r.id}');window.location.href='pages/restaurante.html'" style="cursor:pointer;">
+        <div class="card-img-placeholder">${fotoEl}</div>
+        <button class="fav-btn card-fav ${favoritosSet.has(r.id) ? 'active' : ''}" onclick="toggleFav(event,this,${r.id})" aria-label="Favoritar ${r.nome}">
+          <i class="fa-solid fa-heart"></i>
+        </button>
+        <div class="card-body">
+          <div class="card-category">${r.categoria||''}</div>
+          <h3 class="card-title">${r.nome}</h3>
+          <p class="card-address"><i class="fa-solid fa-location-dot"></i> ${r.bairro||r.cidade||''}</p>
+          <div class="card-footer">
+            <span class="stars stars-sm">${renderStars(r.mediaNote||0)}</span>
+            <span class="rating-badge">${(r.mediaNote||0).toFixed(1)}</span>
+          </div>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  function renderPaginacaoIndex(page, total) {
+    const nav = document.getElementById('indexPaginacao');
+    if (total <= 1) { nav.style.display = 'none'; return; }
+    nav.style.display = 'flex';
+    let h = '';
+    h += `<a href="#" onclick="goPage(event,${page-1})" ${page===0?'style="opacity:.4;pointer-events:none;"':''}><i class="fa-solid fa-chevron-left"></i></a>`;
+    for (let i = 0; i < total; i++) {
+      h += `<a href="#" onclick="goPage(event,${i})" ${i===page?'class="active"':''}>${i+1}</a>`;
+    }
+    h += `<a href="#" onclick="goPage(event,${page+1})" ${page===total-1?'style="opacity:.4;pointer-events:none;"':''}><i class="fa-solid fa-chevron-right"></i></a>`;
+    nav.innerHTML = h;
+  }
+
+  function goPage(e, p) {
+    e.preventDefault();
+    if (p < 0 || p >= totalPages) return;
+    currentPage = p;
+    buscarRestaurantes_index(p);
+    document.getElementById('restaurantsGrid').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── Categoria filter ──────────────────────────────────────
+  function filterCategory(btn) {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    currentCategory = btn.dataset.cat || '';
+    currentPage = 0;
+    buscarRestaurantes_index(0);
+  }
+
+  // ── Search ────────────────────────────────────────────────
+  function doSearch() {
+    const q = document.querySelector('.hero-search-input')?.value.trim() ||
+              document.querySelector('input[type="search"]')?.value.trim() || '';
+    window.location.href = 'pages/buscar.html' + (q ? '?q=' + encodeURIComponent(q) : '');
+  }
+
+  // ── Avaliações recentes ───────────────────────────────────
+  async function carregarAvaliacoesRecentes() {
+    try {
+      const data = await apiRequest('GET', '/api/avaliacoes/recentes?size=6');
+      const reviews = data.content ?? data;
+      const grid = document.getElementById('recentReviewsGrid');
+      grid.innerHTML = reviews.length
+        ? reviews.map(a => reviewCardHTML(a)).join('')
+        : '<p style="grid-column:1/-1;text-align:center;color:var(--gray-400);">Nenhuma avaliação recente.</p>';
+    } catch {
+      document.getElementById('recentReviewsGrid').innerHTML = '';
+    }
+  }
+
+  function reviewCardHTML(a) {
+    const date = a.criadoEm ? tempoRelativo(new Date(a.criadoEm)) : '';
+    const avatar = (a.clienteNome||'U')[0].toUpperCase();
+    return `<article class="card review-card">
+      <div class="review-header">
+        <div class="review-img-placeholder">${categoriaEmoji(null)}</div>
+        <div class="review-meta">
+          <div class="review-restaurant">${a.restauranteNome||''}</div>
+          <span class="stars stars-sm">${renderStars(a.nota)}</span>
+          ${a.titulo ? `<div class="review-title mt-1">${a.titulo}</div>` : ''}
+        </div>
+      </div>
+      <p class="review-body">${(a.comentario||'').slice(0,160)}${a.comentario?.length>160?'…':''}</p>
+      <div class="review-footer">
+        <div class="reviewer">
+          <div class="reviewer-avatar">${avatar}</div>
+          <span>${a.clienteNome||a.clienteUsername||'Usuário'}</span>
+        </div>
+        <span class="text-muted text-sm">${date}</span>
+      </div>
+    </article>`;
+  }
+
+  // ── Favoritar ─────────────────────────────────────────────
+  async function toggleFav(e, btn, id) {
+    e.stopPropagation();
+    if (!isLoggedIn()) { window.location.href = 'pages/login.html'; return; }
+    try {
+      await favoritarRestaurante(id);
+      btn.classList.toggle('active');
+    } catch {}
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function categoriaEmoji(cat) {
+    const map = {'Italiano':'🍝','Japonês':'🍣','Pizzaria':'🍕','Churrascaria':'🥩','Café':'☕','Vegetariano':'🥗','Americano':'🍔','Mexicano':'🌮','Frutos do Mar':'🦞','Chinês':'🥡'};
+    return map[cat] || '🍽️';
+  }
+
+  function tempoRelativo(date) {
+    const diff = Math.floor((Date.now() - date) / 1000);
+    if (diff < 60) return 'agora';
+    if (diff < 3600) return `há ${Math.floor(diff/60)} min`;
+    if (diff < 86400) return `há ${Math.floor(diff/3600)}h`;
+    return `há ${Math.floor(diff/86400)} dias`;
+  }
+
+  // ── Ranking strip ────────────────────────────────────────
+  async function carregarRanking() {
+    try {
+      const data = await buscarRestaurantes({ size: 7, ordenacao: 'nota' });
+      const items = (data.content ?? data).filter(r => r.totalAvaliacoes > 0);
+      if (!items.length) return;
+      const medals = ['🥇','🥈','🥉'];
+      const spans = items.map((r, i) => {
+        const medal = medals[i] ? `<span class="medal">${medals[i]}</span>` : '⭐';
+        const nota = (r.mediaNote || 0).toFixed(1);
+        return `<span>${medal} #${i+1} ${r.nome} — ${nota} ★</span>`;
+      });
+      // duplicate for seamless loop animation
+      const ticker = document.getElementById('ticker');
+      ticker.innerHTML = [...spans, ...spans].join('');
+    } catch {}
+  }
+
+  // Hero search enter key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.matches('input[type="search"], .hero-search-input')) doSearch();
+  });
+</script>
+</body>
+</html>

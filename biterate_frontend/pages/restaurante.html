@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Restaurante — BiteRate</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .restaurant-hero {
+      height: 340px; background: var(--gray-200);
+      position: relative; overflow: hidden;
+    }
+    .restaurant-hero .hero-img {
+      width: 100%; height: 100%; object-fit: cover;
+      background: linear-gradient(135deg, var(--cream) 0%, #f0c870 50%, var(--orange) 100%);
+      display: flex; align-items: center; justify-content: center; font-size: 6rem;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(74,7,58,.85) 0%, rgba(74,7,58,.2) 60%, transparent 100%);
+    }
+    .hero-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 1.5rem;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .hero-info-inner { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; color: var(--white); }
+    .hero-category { font-size: .8rem; font-weight: 700; color: var(--cream); text-transform: uppercase; letter-spacing: .8px; margin-bottom: .4rem; }
+    .hero-name { font-size: clamp(1.6rem,4vw,2.4rem); font-weight: 900; margin-bottom: .5rem; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+    .hero-meta { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; font-size: .9rem; opacity: .9; }
+    .hero-meta span { display: flex; align-items: center; gap: .4rem; }
+    .hero-actions { position: absolute; top: 1rem; right: 1.5rem; display: flex; gap: .6rem; }
+    .hero-action-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,.15); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,.3);
+      color: var(--white); font-size: .95rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background var(--transition);
+    }
+    .hero-action-btn:hover { background: rgba(255,255,255,.3); }
+    .hero-action-btn.active { background: var(--orange); border-color: var(--orange); }
+
+    /* Content layout */
+    .restaurant-content { padding: 2rem 0 3rem; }
+    .restaurant-grid { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start; }
+
+    /* Rating summary */
+    .rating-summary {
+      background: var(--white); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .rating-big { font-size: 3.5rem; font-weight: 900; color: var(--purple); line-height: 1; }
+    .rating-stars-row { display: flex; align-items: center; gap: .75rem; margin: .5rem 0; }
+    .total-reviews { font-size: .85rem; color: var(--gray-600); }
+    .rating-bars { margin-top: 1rem; }
+    .rating-bar-row {
+      display: grid; grid-template-columns: 24px 1fr 36px;
+      gap: .6rem; align-items: center; margin-bottom: .5rem; font-size: .83rem;
+    }
+    .bar-track { height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--orange); border-radius: 4px; transition: width .8s ease; }
+    .bar-pct { color: var(--gray-600); text-align: right; }
+
+    /* Info card */
+    .info-card {
+      background: var(--white); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow); padding: 1.5rem; position: sticky; top: 80px;
+    }
+    .info-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--purple); }
+    .info-item {
+      display: flex; gap: .75rem; align-items: flex-start;
+      margin-bottom: 1rem; font-size: .88rem;
+    }
+    .info-item i { color: var(--orange); font-size: .95rem; margin-top: .15rem; flex-shrink: 0; width: 16px; }
+    .info-item strong { display: block; font-size: .78rem; color: var(--gray-400); margin-bottom: .1rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+    .info-item p { color: var(--gray-700); margin: 0; line-height: 1.4; }
+    .hours-list { display: flex; flex-direction: column; gap: .2rem; }
+    .hours-list span { display: flex; justify-content: space-between; gap: 1rem; }
+    .hours-list .today { font-weight: 700; color: var(--purple); }
+    .open-badge { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; border-radius: 12px; font-size: .78rem; font-weight: 700; }
+    .open-badge.open { background: #dcfce7; color: #166534; }
+    .open-badge.closed { background: #fee2e2; color: #991b1b; }
+
+    /* Review section */
+    .reviews-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: gap; gap: .75rem; }
+    .sort-select { padding: .4rem .8rem; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: .85rem; outline: none; cursor: pointer; }
+    .sort-select:focus { border-color: var(--orange); }
+
+    /* Review item */
+    .review-item {
+      background: var(--white); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow); padding: 1.35rem 1.5rem; margin-bottom: 1rem;
+    }
+    .review-item-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+    .reviewer-info { display: flex; align-items: center; gap: .75rem; }
+    .reviewer-avatar-lg {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--purple); color: var(--white);
+      font-weight: 700; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .reviewer-name { font-weight: 700; font-size: .95rem; }
+    .reviewer-date { font-size: .78rem; color: var(--gray-400); }
+    .review-actions { display: flex; gap: .4rem; align-items: center; }
+    .review-action-btn {
+      background: none; border: 1.5px solid var(--gray-200); color: var(--gray-400);
+      padding: .3rem .6rem; border-radius: 6px; font-size: .8rem; cursor: pointer;
+      transition: all var(--transition);
+    }
+    .review-action-btn:hover { border-color: var(--orange); color: var(--orange); }
+    .review-action-btn.delete:hover { border-color: #ef4444; color: #ef4444; }
+    .review-text { font-size: .92rem; color: var(--gray-700); line-height: 1.65; margin-bottom: .85rem; }
+    .review-photos { display: flex; gap: .5rem; margin-bottom: .85rem; flex-wrap: wrap; }
+    .review-photo {
+      width: 72px; height: 72px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--cream), #f0c870);
+      display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+      cursor: pointer; overflow: hidden;
+    }
+    .review-footer { display: flex; align-items: center; justify-content: space-between; }
+    .vote-group { display: flex; gap: .4rem; }
+    .useful-count { font-size: .8rem; color: var(--gray-400); }
+
+    /* Gallery */
+    .gallery-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+    .gallery-thumb {
+      aspect-ratio: 1; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--cream) 0%, #f0c870 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; cursor: pointer; overflow: hidden;
+      transition: opacity var(--transition);
+    }
+    .gallery-thumb:hover { opacity: .85; }
+    .gallery-thumb.more {
+      background: rgba(74,7,58,.75); color: var(--white);
+      font-size: 1.1rem; font-weight: 700;
+    }
+
+    /* Write review CTA */
+    .write-cta {
+      background: linear-gradient(135deg, var(--purple), #7a1060);
+      border-radius: var(--radius-lg); padding: 1.5rem;
+      color: var(--white); text-align: center; margin-bottom: 1.5rem;
+    }
+    .write-cta h3 { font-size: 1.1rem; margin-bottom: .4rem; }
+    .write-cta p { font-size: .85rem; opacity: .85; margin-bottom: 1rem; }
+
+    @media(max-width:900px) { .restaurant-grid { grid-template-columns: 1fr; } .info-card { position: static; } }
+    @media(max-width:600px) { .gallery-grid { grid-template-columns: repeat(3,1fr); } .hero-actions { top: .7rem; right: .7rem; } }
+  </style>
+</head>
+<body>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="navbar-logo" href="../index.html">
+      <div class="logo-mark">B</div>
+            <span class="logo-text">bite<span>rate</span>.</span>
+    </a>
+    <div class="navbar-search">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="search" placeholder="Pesquisar restaurantes...">
+    </div>
+    <div class="navbar-actions">
+      <a href="buscar.html" class="nav-icon-btn" title="Buscar"><i class="fa-solid fa-magnifying-glass"></i></a>
+      <div class="nav-avatar" title="Meu perfil" onclick="window.location.href='perfil.html'">F</div>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div style="background:var(--gray-100);border-bottom:1px solid var(--gray-200);padding:.6rem 0;">
+  <div class="container">
+    <nav aria-label="Caminho de navegação" style="font-size:.82rem;color:var(--gray-600);display:flex;align-items:center;gap:.4rem;">
+      <a href="../index.html" style="color:var(--orange);">Início</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:.65rem;"></i>
+      <a href="buscar.html" style="color:var(--orange);">Restaurantes</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:.65rem;"></i>
+      <span id="breadcrumbNome">Carregando...</span>
+    </nav>
+  </div>
+</div>
+
+<!-- RESTAURANT HERO -->
+<div class="restaurant-hero">
+  <div class="hero-img" id="heroImg">🍽️</div>
+  <div class="hero-overlay"></div>
+  <div class="hero-actions">
+    <button class="hero-action-btn" id="favBtn" onclick="toggleFav()" aria-label="Favoritar restaurante" title="Favoritar">
+      <i class="fa-solid fa-heart"></i>
+    </button>
+    <button class="hero-action-btn" onclick="shareRestaurant()" aria-label="Compartilhar" title="Compartilhar">
+      <i class="fa-solid fa-share-nodes"></i>
+    </button>
+  </div>
+  <div class="hero-info-inner">
+    <div class="hero-category" id="heroCategoria"></div>
+    <h1 class="hero-name" id="heroNome">...</h1>
+    <div class="hero-meta" id="heroMeta"></div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="restaurant-content">
+  <div class="container">
+    <div class="restaurant-grid">
+
+      <!-- MAIN COLUMN -->
+      <div>
+        <!-- Write CTA -->
+        <div class="write-cta">
+          <h3><span id="ctaNome">Já visitou este restaurante?</span></h3>
+          <p>Compartilhe sua experiência e ajude outros a escolherem melhor.</p>
+          <a href="avaliar.html" class="btn btn-primary" id="avaliarLink">
+            <i class="fa-solid fa-pen-to-square"></i> Escrever avaliação
+          </a>
+        </div>
+
+        <!-- Rating Summary -->
+        <div class="rating-summary" id="ratingSummary">
+          <div style="text-align:center;color:var(--gray-400);padding:1.5rem;">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          </div>
+        </div>
+
+        <!-- Reviews list -->
+        <div class="reviews-header">
+          <h2 class="section-title" style="margin-bottom:0;">Avaliações</h2>
+        </div>
+
+        <div id="reviewsList"><p style="color:var(--gray-400);text-align:center;padding:2rem;"><i class="fa-solid fa-spinner fa-spin"></i></p></div>
+
+        <!-- Pagination -->
+        <nav class="pagination" id="reviewPaginacao" aria-label="Páginas de avaliações" style="display:none;"></nav>
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside>
+        <div class="info-card" id="infoCard">
+          <h3><i class="fa-solid fa-circle-info" style="color:var(--orange);"></i> Informações</h3>
+          <div id="infoCardBody" style="color:var(--gray-400);text-align:center;padding:1rem;">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo-text">bite<span>rate</span>.</div>
+        <p>Descubra e avalie os melhores restaurantes.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Site</h4><ul>
+        <li><a href="../index.html">Início</a></li>
+        <li><a href="buscar.html">Restaurantes</a></li>
+        <li><a href="cadastrar-restaurante.html">Cadastrar restaurante</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Conta</h4><ul>
+        <li><a href="login.html">Entrar</a></li>
+        <li><a href="register.html">Cadastrar</a></li>
+        <li><a href="perfil.html">Meu perfil</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Suporte</h4><ul>
+        <li><a href="#">Ajuda</a></li>
+        <li><a href="#">Contato</a></li>
+        <li><a href="#">Termos</a></li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2025 BiteRate. Todos os direitos reservados.</p></div>
+  </div>
+</footer>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<!-- Delete confirmation modal -->
+<div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="deleteModalTitle">Excluir avaliação</h3>
+      <button class="modal-close" onclick="closeDeleteModal()" aria-label="Fechar">&times;</button>
+    </div>
+    <p>Tem certeza que deseja excluir esta avaliação? Esta ação não pode ser desfeita.</p>
+    <div style="display:flex;gap:.75rem;margin-top:1.5rem;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeDeleteModal()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;background:#ef4444;" onclick="confirmDelete()">
+        <i class="fa-solid fa-trash"></i> Excluir
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  const restauranteId = new URLSearchParams(window.location.search).get('id')
+    || sessionStorage.getItem('restauranteId');
+  let favActive = false;
+  let reviewToDelete = null;
+  let reviewToDeleteId = null;
+  let currentPage = 0;
+  let totalReviewPages = 0;
+
+  // ── Init ──────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async () => {
+    initNavbar();
+    if (!restauranteId) {
+      document.body.innerHTML = '<p style="text-align:center;padding:4rem;color:var(--gray-500);">Restaurante não encontrado.</p>';
+      return;
+    }
+    await Promise.all([carregarRestaurante(), carregarAvaliacoes(0)]);
+    if (isLoggedIn()) verificarFavorito();
+  });
+
+  // ── Carregar dados do restaurante ─────────────────────────
+  async function carregarRestaurante() {
+    try {
+      const r = await getRestaurante(restauranteId);
+      renderHero(r);
+      renderSidebar(r);
+      renderRatingSummary(r);
+      const avaliarLink = document.getElementById('avaliarLink');
+      avaliarLink.href = 'avaliar.html';
+      avaliarLink.onclick = () => sessionStorage.setItem('avaliarRestauranteId', restauranteId);
+      const ctaEl = document.getElementById('ctaNome');
+      if (ctaEl) ctaEl.textContent = `Já visitou ${r.nome}?`;
+    } catch (err) {
+      showToast('Erro ao carregar restaurante.', 'error');
+    }
+  }
+
+  function renderHero(r) {
+    document.getElementById('pageTitle').textContent = `${r.nome} — BiteRate`;
+    document.getElementById('breadcrumbNome').textContent = r.nome;
+    document.getElementById('heroNome').textContent = r.nome;
+    document.getElementById('heroCategoria').textContent = `${categoriaEmoji(r.categoria)} ${r.categoria || ''}`;
+
+    const heroImg = document.getElementById('heroImg');
+    if (r.fotoUrl) {
+      heroImg.innerHTML = `<img src="${r.fotoUrl}" alt="${r.nome}" style="width:100%;height:100%;object-fit:cover;">`;
+    } else {
+      heroImg.textContent = categoriaEmoji(r.categoria);
+    }
+
+    document.getElementById('heroMeta').innerHTML = `
+      <span><i class="fa-solid fa-star" style="color:var(--cream);"></i> ${(r.mediaNote||0).toFixed(1)} (${r.totalAvaliacoes||0} avaliações)</span>
+      <span><i class="fa-solid fa-location-dot"></i> ${r.bairro||''}, ${r.cidade||''}</span>
+      ${faixaPrecoLabel(r.faixaPreco) ? `<span>${faixaPrecoLabel(r.faixaPreco)}</span>` : ''}
+    `;
+  }
+
+  function renderSidebar(r) {
+    const diasLabel = {'seg':'Segunda','ter':'Terça','qua':'Quarta','qui':'Quinta','sex':'Sexta','sab':'Sábado','dom':'Domingo'};
+    const horarioHTML = r.horarios && r.horarios.length
+      ? r.horarios.map(h =>
+          `<span><span>${diasLabel[h.dia]||h.dia}</span><span>${h.aberto ? `${h.horaAbertura}–${h.horaFechamento}` : 'Fechado'}</span></span>`
+        ).join('')
+      : '<span>Não informado</span>';
+
+    const comodidadesArr = r.comodidades
+      ? (Array.isArray(r.comodidades) ? r.comodidades : r.comodidades.split(','))
+      : [];
+    const comodidadesHTML = comodidadesArr.length
+      ? comodidadesArr.map(c => c.trim()).filter(Boolean).join(' · ')
+      : 'Não informado';
+
+    document.getElementById('infoCardBody').innerHTML = `
+      <div class="info-item">
+        <i class="fa-solid fa-location-dot"></i>
+        <div><strong>Endereço</strong>
+          <p>${r.rua||''} ${r.numero||''}, ${r.bairro||''}<br>${r.cidade||''} - ${r.estado||''}, ${r.cep||''}</p>
+        </div>
+      </div>
+      ${r.telefone ? `
+      <div class="info-item">
+        <i class="fa-solid fa-phone"></i>
+        <div><strong>Telefone</strong><p>${r.telefone}</p></div>
+      </div>` : ''}
+      <div class="info-item">
+        <i class="fa-solid fa-clock"></i>
+        <div><strong>Horários</strong>
+          <div class="hours-list">${horarioHTML}</div>
+        </div>
+      </div>
+      <div class="info-item">
+        <i class="fa-solid fa-utensils"></i>
+        <div><strong>Cozinha</strong><p>${r.categoria||''}</p></div>
+      </div>
+      <div class="info-item">
+        <i class="fa-solid fa-dollar-sign"></i>
+        <div><strong>Faixa de preço</strong><p>${faixaPrecoLabel(r.faixaPreco)||'Não informado'}</p></div>
+      </div>
+      <div class="info-item">
+        <i class="fa-solid fa-circle-check"></i>
+        <div><strong>Comodidades</strong><p>${comodidadesHTML}</p></div>
+      </div>
+      <div style="margin-top:1.25rem;">
+        <a href="avaliar.html?restauranteId=${restauranteId}" class="btn btn-primary btn-block">
+          <i class="fa-solid fa-pen-to-square"></i> Avaliar restaurante
+        </a>
+        <button class="btn btn-outline btn-block mt-1" onclick="toggleFav()">
+          <i class="fa-solid fa-heart" id="favBtnText"></i> <span id="favLabel">Favoritar</span>
+        </button>
+      </div>
+    `;
+  }
+
+  function renderRatingSummary(r) {
+    const nota = r.mediaNote || 0;
+    const dist = r.distribuicaoNotas || {};
+    // usa totalAvaliacoes do banco, mas se estiver 0 soma da distribuição real
+    const distTotal = Object.values(dist).reduce((s, v) => s + Number(v), 0);
+    const total = r.totalAvaliacoes > 0 ? r.totalAvaliacoes : distTotal;
+    document.getElementById('ratingSummary').innerHTML = `
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:1.5rem;align-items:center;">
+        <div style="text-align:center;">
+          <div class="rating-big">${nota.toFixed(1)}</div>
+          <div class="rating-stars-row" style="justify-content:center;">
+            <span class="stars stars-lg">${renderStars(nota)}</span>
+          </div>
+          <div class="total-reviews">${total} avaliação${total !== 1 ? 'ões' : ''}</div>
+        </div>
+        <div class="rating-bars">
+          ${[5,4,3,2,1].map(s => {
+            const count = dist[s] || 0;
+            const pct = total > 0 ? Math.round(count / total * 100) : 0;
+            return `<div class="rating-bar-row">
+              <span style="font-size:.8rem;">${s}★</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+              <span class="bar-pct">${pct}%</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ── Avaliações ────────────────────────────────────────────
+  async function carregarAvaliacoes(page) {
+    const ord = 'recentes';
+    try {
+      const data = await getAvaliacoesRestaurante(restauranteId, page, ord);
+      const items = data.content ?? data;
+      totalReviewPages = data.totalPages ?? 1;
+      currentPage = data.number ?? page;
+
+      const user = getUser();
+      document.getElementById('reviewsList').innerHTML = items.length
+        ? items.map(a => reviewHTML(a, user)).join('')
+        : '<p style="color:var(--gray-400);text-align:center;padding:2rem;">Nenhuma avaliação ainda.</p>';
+
+      renderReviewPaginacao(currentPage, totalReviewPages);
+    } catch (err) {
+      document.getElementById('reviewsList').innerHTML = '<p style="color:var(--gray-400);text-align:center;padding:2rem;">Erro ao carregar avaliações.</p>';
+    }
+  }
+
+  function reviewHTML(a, user) {
+    const isMine = user && user.id === a.clienteId;
+    const avatar = (a.clienteNome || 'U')[0].toUpperCase();
+    const date = a.criadoEm ? new Date(a.criadoEm).toLocaleDateString('pt-BR', {day:'numeric',month:'long',year:'numeric'}) : '';
+    return `
+      <article class="review-item" data-id="${a.id}">
+        <div class="review-item-header">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar-lg" style="background:var(--purple);">${avatar}</div>
+            <div>
+              <div class="reviewer-name">${a.clienteNome || a.clienteUsername || 'Usuário'}</div>
+              <div class="reviewer-date">${date}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;">
+            <span class="stars stars-sm">${renderStars(a.nota)}</span>
+            ${isMine ? `
+            <div class="review-actions">
+              <button class="review-action-btn" onclick="editReview(${a.id})" title="Editar">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="review-action-btn delete" onclick="deleteReview(this, ${a.id})" title="Excluir">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>` : ''}
+          </div>
+        </div>
+        ${a.titulo ? `<strong style="display:block;margin-bottom:.4rem;">${a.titulo}</strong>` : ''}
+        <p class="review-text">${a.comentario || ''}</p>
+        ${a.tipoVisita ? `<span class="badge badge-outline" style="font-size:.75rem;margin-top:.5rem;">${tipoVisitaLabel(a.tipoVisita)}</span>` : ''}
+      </article>`;
+  }
+
+  function renderReviewPaginacao(page, total) {
+    const nav = document.getElementById('reviewPaginacao');
+    if (!nav) return;
+    if (total <= 1) { nav.style.display = 'none'; return; }
+    nav.style.display = 'flex';
+    const prev = `<a href="#" onclick="goReviewPage(event,${page-1})" aria-label="Anterior" ${page===0?'style="opacity:.4;pointer-events:none;"':''}><i class="fa-solid fa-chevron-left"></i></a>`;
+    const next = `<a href="#" onclick="goReviewPage(event,${page+1})" aria-label="Próxima" ${page===total-1?'style="opacity:.4;pointer-events:none;"':''}><i class="fa-solid fa-chevron-right"></i></a>`;
+    let pages = '';
+    if (total <= 5) {
+      for (let i = 0; i < total; i++)
+        pages += `<a href="#" onclick="goReviewPage(event,${i})" ${i===page?'class="active"':''}>${i+1}</a>`;
+    } else {
+      const show = new Set([0, total-1, page, page-1, page+1].filter(i => i>=0 && i<total));
+      let prev2 = -1;
+      [...show].sort((a,b)=>a-b).forEach(i => {
+        if (prev2 >= 0 && i - prev2 > 1) pages += `<span class="dots">…</span>`;
+        pages += `<a href="#" onclick="goReviewPage(event,${i})" ${i===page?'class="active"':''}>${i+1}</a>`;
+        prev2 = i;
+      });
+    }
+    nav.innerHTML = prev + pages + next;
+  }
+
+  function goReviewPage(e, p) {
+    e.preventDefault();
+    if (p < 0 || p >= totalReviewPages) return;
+    carregarAvaliacoes(p);
+  }
+
+  // ── Favoritar ─────────────────────────────────────────────
+  async function verificarFavorito() {
+    try {
+      const res = await isFavoritado(restauranteId);
+      favActive = res === true;
+      atualizarBotaoFav();
+    } catch {}
+  }
+
+  async function toggleFav() {
+    if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+    try {
+      await favoritarRestaurante(restauranteId);
+      favActive = !favActive;
+      atualizarBotaoFav();
+      showToast(favActive ? 'Adicionado aos favoritos! ❤️' : 'Removido dos favoritos.', favActive ? 'success' : 'info');
+    } catch (err) {
+      showToast('Erro ao favoritar.', 'error');
+    }
+  }
+
+  function atualizarBotaoFav() {
+    const btn = document.getElementById('favBtn');
+    const label = document.getElementById('favLabel');
+    if (btn) btn.classList.toggle('active', favActive);
+    if (label) label.textContent = favActive ? 'Favoritado' : 'Favoritar';
+  }
+
+  // ── Edit / Delete ─────────────────────────────────────────
+  function editReview(id) {
+    window.location.href = `avaliar.html?restauranteId=${restauranteId}&editId=${id}`;
+  }
+
+  function deleteReview(btn, id) {
+    reviewToDelete = btn.closest('.review-item');
+    reviewToDeleteId = id;
+    document.getElementById('deleteModal').classList.add('open');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('open');
+    reviewToDelete = null;
+    reviewToDeleteId = null;
+  }
+
+  async function confirmDelete() {
+    if (!reviewToDeleteId) { closeDeleteModal(); return; }
+    try {
+      await excluirAvaliacao(reviewToDeleteId);
+      reviewToDelete && reviewToDelete.remove();
+      showToast('Avaliação excluída com sucesso.', 'success');
+    } catch (err) {
+      showToast('Erro ao excluir avaliação.', 'error');
+    }
+    closeDeleteModal();
+  }
+
+  // ── Share ─────────────────────────────────────────────────
+  function shareRestaurant() {
+    if (navigator.share) {
+      navigator.share({ title: document.getElementById('heroNome').textContent + ' — BiteRate', url: window.location.href });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      showToast('Link copiado!', 'success');
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function categoriaEmoji(cat) {
+    const map = {'Italiano':'🍝','Japonês':'🍣','Pizzaria':'🍕','Churrascaria':'🥩','Café':'☕','Vegetariano':'🥗','Americano':'🍔','Mexicano':'🌮','Frutos do Mar':'🦞','Chinês':'🥡'};
+    return map[cat] || '🍽️';
+  }
+
+  function tipoVisitaLabel(t) {
+    const m = {sozinho:'Solo',casal:'Em casal',familia:'Em família',amigos:'Com amigos',negocios:'A negócios'};
+    return m[t] || t;
+  }
+
+  function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    const icons = {success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+    t.innerHTML = `<i class="fa-solid ${icons[type]||'fa-circle-info'}"></i> ${msg}`;
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+  });
+</script>
+</body>
+</html>

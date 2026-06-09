@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avaliar restaurante — BiteRate</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { background: var(--gray-100); min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; padding: 2.5rem 0 3.5rem; }
+
+    .review-form-wrap {
+      max-width: 680px; margin: 0 auto;
+      background: var(--white); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .form-header {
+      background: linear-gradient(135deg, var(--purple) 0%, #7a1060 100%);
+      color: var(--white); padding: 1.75rem 2rem;
+    }
+    .form-header h1 { font-size: 1.4rem; font-weight: 800; margin-bottom: .25rem; }
+    .form-header p { font-size: .88rem; opacity: .8; }
+
+    .form-body { padding: 2rem; }
+
+    /* Restaurant selector card */
+    .restaurant-selector {
+      border: 2px solid var(--gray-200); border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem; margin-bottom: 1.5rem; cursor: pointer;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      display: flex; align-items: center; gap: 1rem;
+      position: relative;
+    }
+    .restaurant-selector:hover { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,69,0,.08); }
+    .restaurant-selector.selected { border-color: var(--orange); }
+    .rest-thumb {
+      width: 56px; height: 56px; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--cream), #f0c870);
+      display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;
+    }
+    .rest-info { flex: 1; }
+    .rest-name { font-weight: 700; font-size: 1rem; color: var(--gray-800); }
+    .rest-meta { font-size: .82rem; color: var(--gray-600); margin-top: .15rem; }
+    .change-btn {
+      font-size: .8rem; color: var(--orange); font-weight: 600;
+      background: none; border: none; cursor: pointer; padding: 0;
+      flex-shrink: 0;
+    }
+    .change-btn:hover { text-decoration: underline; }
+
+    /* Restaurant search dropdown */
+    .rest-search-wrap { position: relative; margin-bottom: 1.5rem; }
+    .rest-search-input { padding-left: 2.5rem !important; }
+    .rest-search-icon { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: var(--gray-400); }
+    .rest-dropdown {
+      position: absolute; top: calc(100% + .25rem); left: 0; right: 0;
+      background: var(--white); border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius); box-shadow: var(--shadow-hover);
+      z-index: 100; display: none; max-height: 220px; overflow-y: auto;
+    }
+    .rest-dropdown.show { display: block; }
+    .rest-option {
+      display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem;
+      cursor: pointer; transition: background var(--transition);
+    }
+    .rest-option:hover { background: var(--gray-100); }
+    .rest-option .opt-emoji { font-size: 1.2rem; }
+    .rest-option .opt-name { font-weight: 600; font-size: .9rem; }
+    .rest-option .opt-cat { font-size: .78rem; color: var(--gray-400); }
+
+    /* Star rating big */
+    .star-rating-section { text-align: center; margin-bottom: 2rem; }
+    .star-rating-section h3 { font-size: 1rem; font-weight: 700; color: var(--gray-700); margin-bottom: 1rem; }
+    .star-rating-section .star-input { justify-content: center; }
+    .star-rating-section .star-input label { font-size: 2.8rem; }
+    .star-label {
+      margin-top: .5rem; font-size: 1rem; font-weight: 700;
+      color: var(--orange); min-height: 1.5rem; transition: all var(--transition);
+    }
+
+    /* Aspect ratings */
+    .aspects-grid {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1.75rem;
+    }
+    .aspect-item { text-align: center; }
+    .aspect-item label { display: block; font-size: .82rem; font-weight: 600; color: var(--gray-600); margin-bottom: .4rem; }
+    .aspect-item .mini-stars { display: flex; justify-content: center; gap: 2px; }
+    .aspect-item .mini-stars i { font-size: 1.1rem; color: var(--gray-200); cursor: pointer; transition: color var(--transition); }
+    .aspect-item .mini-stars i.active { color: var(--orange); }
+
+    /* Visit info */
+    .visit-info { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+
+    /* Character counter */
+    .textarea-wrap { position: relative; }
+    .char-count {
+      position: absolute; bottom: .5rem; right: .75rem;
+      font-size: .75rem; color: var(--gray-400);
+    }
+    .char-count.warn { color: #f97316; }
+    .char-count.danger { color: #ef4444; }
+
+    /* Photo upload */
+    .photo-section { margin-bottom: 1.5rem; }
+    .photo-section h4 { font-size: .95rem; font-weight: 700; margin-bottom: .75rem; color: var(--gray-700); }
+    .photo-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: .6rem; }
+    .photo-slot {
+      aspect-ratio: 1; border: 2px dashed var(--gray-200); border-radius: var(--radius);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--gray-400); font-size: 1.3rem;
+      transition: all var(--transition); background: var(--gray-100);
+      position: relative; overflow: hidden;
+    }
+    .photo-slot:hover { border-color: var(--orange); color: var(--orange); background: rgba(249,69,0,.04); }
+    .photo-slot span { font-size: .72rem; margin-top: .3rem; font-weight: 600; }
+    .photo-slot .photo-preview {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem;
+    }
+    .photo-slot .remove-photo {
+      position: absolute; top: .2rem; right: .2rem;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(0,0,0,.55); color: #fff;
+      font-size: .6rem; display: none; align-items: center; justify-content: center;
+      border: none; cursor: pointer;
+    }
+    .photo-slot:hover .remove-photo { display: flex; }
+
+    /* Tip box */
+    .tip-box {
+      background: rgba(249,69,0,.06); border-left: 3px solid var(--orange);
+      border-radius: 0 var(--radius) var(--radius) 0; padding: .85rem 1.1rem;
+      margin-bottom: 1.5rem; font-size: .85rem; color: var(--gray-700); line-height: 1.55;
+    }
+    .tip-box strong { color: var(--orange); }
+
+    .form-actions { display: flex; gap: .75rem; justify-content: flex-end; }
+
+    @media(max-width:600px) {
+      .form-body { padding: 1.25rem; }
+      .aspects-grid { grid-template-columns: repeat(3,1fr); gap: .6rem; }
+      .visit-info { grid-template-columns: 1fr; }
+      .photo-grid { grid-template-columns: repeat(3,1fr); }
+      .form-actions { flex-direction: column; }
+      .form-actions .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="navbar-logo" href="../index.html">
+      <div class="logo-mark">B</div>
+            <span class="logo-text">bite<span>rate</span>.</span>
+    </a>
+    <div class="navbar-actions" style="margin-left:auto;">
+      <div class="nav-avatar" title="Meu perfil" onclick="window.location.href='perfil.html'">F</div>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="Caminho" style="font-size:.82rem;color:var(--gray-600);margin-bottom:1.5rem;display:flex;align-items:center;gap:.4rem;">
+      <a href="../index.html" style="color:var(--orange);">Início</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:.65rem;"></i>
+      <a href="restaurante.html" style="color:var(--orange);" id="breadcrumbRest" href="#">Restaurante</a>
+      <i class="fa-solid fa-chevron-right" style="font-size:.65rem;"></i>
+      <span>Avaliar</span>
+    </nav>
+
+    <div class="review-form-wrap">
+      <div class="form-header">
+        <h1><i class="fa-solid fa-pen-to-square"></i> Como foi sua experiência em...</h1>
+        <p>Sua avaliação ajuda outras pessoas a escolherem melhor onde comer.</p>
+      </div>
+
+      <div class="form-body">
+        <!-- Restaurant display / selector -->
+        <div id="restaurantDisplay" class="restaurant-selector" style="display:none;">
+          <div class="rest-thumb" id="restThumb">🍽️</div>
+          <div class="rest-info">
+            <div class="rest-name" id="restNome">—</div>
+            <div class="rest-meta" id="restMeta"></div>
+          </div>
+          <button class="change-btn" onclick="showRestSearch()" type="button">Trocar</button>
+        </div>
+
+        <!-- Restaurant search (hidden by default) -->
+        <div id="restSearchWrap" class="rest-search-wrap" style="display:none;">
+          <i class="fa-solid fa-magnifying-glass rest-search-icon"></i>
+          <input type="text" class="form-control rest-search-input" id="restSearch"
+                 placeholder="Buscar restaurante..." oninput="searchRestaurants(this.value)"
+                 autocomplete="off">
+          <div class="rest-dropdown" id="restDropdown"></div>
+        </div>
+
+        <form id="reviewForm" novalidate onsubmit="submitReview(event)">
+
+          <!-- Overall star rating -->
+          <div class="star-rating-section">
+            <h3>Nota geral <span style="color:var(--orange);">*</span></h3>
+            <div class="star-input" id="starInput" role="radiogroup" aria-label="Selecionar nota de 1 a 5 estrelas">
+              <input type="radio" name="rating" id="s5" value="5"><label for="s5" title="Excelente">★</label>
+              <input type="radio" name="rating" id="s4" value="4"><label for="s4" title="Muito bom">★</label>
+              <input type="radio" name="rating" id="s3" value="3"><label for="s3" title="Bom">★</label>
+              <input type="radio" name="rating" id="s2" value="2"><label for="s2" title="Regular">★</label>
+              <input type="radio" name="rating" id="s1" value="1"><label for="s1" title="Ruim">★</label>
+            </div>
+            <div class="star-label" id="starLabel">Selecione uma nota</div>
+          </div>
+
+          <!-- Aspect ratings -->
+          <div class="aspects-grid">
+            <div class="aspect-item">
+              <label>Comida</label>
+              <div class="mini-stars" id="comidaStars" data-aspect="comida" onclick="rateAspect(this)">
+                <i class="fa-solid fa-star" data-val="1"></i>
+                <i class="fa-solid fa-star" data-val="2"></i>
+                <i class="fa-solid fa-star" data-val="3"></i>
+                <i class="fa-solid fa-star" data-val="4"></i>
+                <i class="fa-solid fa-star" data-val="5"></i>
+              </div>
+            </div>
+            <div class="aspect-item">
+              <label>Atendimento</label>
+              <div class="mini-stars" id="atendimentoStars" data-aspect="atendimento" onclick="rateAspect(this)">
+                <i class="fa-solid fa-star" data-val="1"></i>
+                <i class="fa-solid fa-star" data-val="2"></i>
+                <i class="fa-solid fa-star" data-val="3"></i>
+                <i class="fa-solid fa-star" data-val="4"></i>
+                <i class="fa-solid fa-star" data-val="5"></i>
+              </div>
+            </div>
+            <div class="aspect-item">
+              <label>Ambiente</label>
+              <div class="mini-stars" id="ambienteStars" data-aspect="ambiente" onclick="rateAspect(this)">
+                <i class="fa-solid fa-star" data-val="1"></i>
+                <i class="fa-solid fa-star" data-val="2"></i>
+                <i class="fa-solid fa-star" data-val="3"></i>
+                <i class="fa-solid fa-star" data-val="4"></i>
+                <i class="fa-solid fa-star" data-val="5"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visit info -->
+          <div class="visit-info">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" for="visitDate">Data da visita</label>
+              <input class="form-control" type="date" id="visitDate" name="visitDate"
+                     max="" required>
+              <span class="form-error">Informe a data da visita.</span>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" for="visitType">Tipo de visita</label>
+              <select class="form-control" id="visitType" name="visitType">
+                <option value="">Selecione...</option>
+                <option value="sozinho">A sós</option>
+                <option value="casal">Casal</option>
+                <option value="familia">Família</option>
+                <option value="amigos">Amigos</option>
+                <option value="negocios">Negócios</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Title -->
+          <div class="form-group mt-2">
+            <label class="form-label" for="reviewTitle">Título da avaliação <span style="color:var(--orange);">*</span></label>
+            <input class="form-control" type="text" id="reviewTitle" name="titulo"
+                   placeholder="Ex: Experiência incrível, voltarei sempre!" required maxlength="100"
+                   oninput="updateTitleCount(this)">
+            <div style="display:flex;justify-content:space-between;">
+              <span class="form-error">Informe um título para sua avaliação.</span>
+              <span id="titleCount" style="font-size:.75rem;color:var(--gray-400);margin-top:.2rem;">0/100</span>
+            </div>
+          </div>
+
+          <!-- Comment -->
+          <div class="form-group">
+            <label class="form-label" for="reviewComment">Sua avaliação <span style="color:var(--orange);">*</span></label>
+            <div class="textarea-wrap">
+              <textarea class="form-control" id="reviewComment" name="comentario" rows="5"
+                        placeholder="Descreva sua experiência: comida, atendimento, ambiente, preço..." required minlength="30" maxlength="1000"
+                        oninput="updateCharCount(this)"></textarea>
+              <span class="char-count" id="charCount">0/1000</span>
+            </div>
+            <span class="form-error">A avaliação deve ter pelo menos 30 caracteres.</span>
+          </div>
+
+          <!-- Tip box -->
+          <div class="tip-box">
+            <strong>Dica:</strong> Avaliações detalhadas são mais úteis para a comunidade. Tente mencionar pratos específicos, qualidade do atendimento e se voltaria ao local.
+          </div>
+
+          <!-- Photos -->
+          <div class="photo-section">
+            <h4><i class="fa-solid fa-camera" style="color:var(--orange);"></i> Adicionar fotos <span style="font-size:.8rem;font-weight:400;color:var(--gray-400);">(opcional)</span></h4>
+            <div class="photo-grid" id="photoGrid">
+              <div class="photo-slot" onclick="addPhoto(this)" title="Adicionar foto">
+                <i class="fa-solid fa-plus"></i>
+                <span>Foto</span>
+              </div>
+              <div class="photo-slot" onclick="addPhoto(this)" title="Adicionar foto">
+                <i class="fa-solid fa-plus"></i>
+                <span>Foto</span>
+              </div>
+              <div class="photo-slot" onclick="addPhoto(this)" title="Adicionar foto">
+                <i class="fa-solid fa-plus"></i>
+                <span>Foto</span>
+              </div>
+              <div class="photo-slot" onclick="addPhoto(this)" title="Adicionar foto">
+                <i class="fa-solid fa-plus"></i>
+                <span>Foto</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <a href="restaurante.html" class="btn btn-outline">
+              <i class="fa-solid fa-arrow-left"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+              <i class="fa-solid fa-paper-plane"></i> Publicar avaliação
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../js/api.js"></script>
+<script>
+  // ── Estado ────────────────────────────────────────────────
+  const starLabels = ['', 'Ruim 😞', 'Regular 😐', 'Bom 🙂', 'Muito bom 😊', 'Excelente! 🤩'];
+  const _rid = new URLSearchParams(window.location.search).get('restauranteId')
+    || sessionStorage.getItem('avaliarRestauranteId');
+  const restauranteIdParam = _rid;
+  let selectedRestauranteId = _rid ? parseInt(_rid) : null;
+  let searchDebounce;
+
+  // Modo edição
+  const _editData = JSON.parse(sessionStorage.getItem('editAvaliacao') || 'null');
+  const editMode = !!_editData;
+
+  // ── Init ──────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async () => {
+    requireAuth();
+    initNavbar();
+
+    document.getElementById('visitDate').max = new Date().toISOString().split('T')[0];
+    document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
+
+    if (editMode) {
+      // Ajusta cabeçalho e botão
+      document.querySelector('.form-header h1').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar sua avaliação';
+      document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-check"></i> Salvar alterações';
+
+      // Pré-carrega restaurante (não permite trocar)
+      try {
+        const r = await getRestaurante(_editData.restauranteId);
+        selectedRestauranteId = r.id;
+        document.getElementById('restNome').textContent = r.nome;
+        document.getElementById('restMeta').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${r.bairro||''}, ${r.cidade||''} &nbsp;·&nbsp; ${r.categoria||''}`;
+        document.getElementById('restThumb').textContent = categoriaEmoji(r.categoria);
+        document.getElementById('restaurantDisplay').style.display = 'flex';
+        document.getElementById('restSearchWrap').style.display = 'none';
+        // Esconde o botão "Trocar" no modo de edição
+        const changeBtn = document.querySelector('.change-btn');
+        if (changeBtn) changeBtn.style.display = 'none';
+      } catch {}
+
+      // Pré-preenche nota geral
+      const notaRadio = document.querySelector(`#starInput input[value="${_editData.nota}"]`);
+      if (notaRadio) { notaRadio.checked = true; document.getElementById('starLabel').textContent = starLabels[_editData.nota]; }
+
+      // Pré-preenche aspectos
+      function preencheAspecto(containerId, val) {
+        if (!val) return;
+        document.querySelectorAll(`#${containerId} i`).forEach((star, i) => {
+          star.classList.toggle('active', i < val);
+        });
+      }
+      preencheAspecto('comidaStars', _editData.notaComida);
+      preencheAspecto('atendimentoStars', _editData.notaAtendimento);
+      preencheAspecto('ambienteStars', _editData.notaAmbiente);
+
+      // Pré-preenche campos de texto
+      document.getElementById('reviewTitle').value = _editData.titulo || '';
+      document.getElementById('reviewComment').value = _editData.comentario || '';
+      document.getElementById('titleCount').textContent = (_editData.titulo||'').length + '/100';
+      updateCharCount(document.getElementById('reviewComment'));
+
+      // Data e tipo de visita
+      if (_editData.dataVisita) document.getElementById('visitDate').value = _editData.dataVisita;
+      if (_editData.tipoVisita) document.getElementById('visitType').value = _editData.tipoVisita;
+
+    } else if (restauranteIdParam) {
+      try {
+        const r = await getRestaurante(restauranteIdParam);
+        selectRestaurante(r);
+      } catch {
+        showRestSearch();
+      }
+    } else {
+      showRestSearch();
+    }
+
+  });
+
+  // ── Stars ─────────────────────────────────────────────────
+  document.querySelectorAll('#starInput input').forEach(input => {
+    input.addEventListener('change', () => {
+      document.getElementById('starLabel').textContent = starLabels[parseInt(input.value)];
+      document.getElementById('starLabel').style.color = '';
+    });
+  });
+
+  function rateAspect(container) {
+    const clicked = event.target.closest('[data-val]');
+    if (!clicked) return;
+    const val = parseInt(clicked.dataset.val);
+    container.querySelectorAll('i').forEach((star, i) => {
+      star.classList.toggle('active', i < val);
+    });
+  }
+
+  function updateCharCount(el) {
+    const n = el.value.length;
+    const counter = document.getElementById('charCount');
+    counter.textContent = n + '/1000';
+    counter.className = 'char-count' + (n > 900 ? ' danger' : n > 800 ? ' warn' : '');
+  }
+  function updateTitleCount(el) {
+    document.getElementById('titleCount').textContent = el.value.length + '/100';
+  }
+
+  // ── Busca de restaurante ──────────────────────────────────
+  let restSearchActive = false;
+
+  function showRestSearch() {
+    document.getElementById('restaurantDisplay').style.display = 'none';
+    document.getElementById('restSearchWrap').style.display = 'block';
+    document.getElementById('restSearch').focus();
+    restSearchActive = true;
+  }
+
+  function renderDropdown(items, dropdown) {
+    dropdown.innerHTML = items.length
+      ? items.map(r => `
+          <div class="rest-option" onclick="selectRestaurante(${JSON.stringify(r).replace(/"/g,'&quot;')})">
+            <span class="opt-emoji">${categoriaEmoji(r.categoria)}</span>
+            <div>
+              <div class="opt-name">${r.nome}</div>
+              <div class="opt-cat">${r.categoria||''} · ${r.bairro||r.cidade||''}</div>
+            </div>
+          </div>`).join('')
+      : '<div style="padding:.75rem 1rem;color:var(--gray-400);font-size:.85rem;">Nenhum resultado.</div>';
+    dropdown.classList.add('show');
+  }
+
+  async function searchRestaurants(q) {
+    const dropdown = document.getElementById('restDropdown');
+    if (!q || q.length < 2) {
+      // sem texto: mostra todos
+      const data = await buscarRestaurantes({ size: 20, ordenacao: 'nota' }).catch(() => null);
+      if (data) renderDropdown(data.content ?? data, dropdown);
+      return;
+    }
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(async () => {
+      try {
+        const data = await buscarRestaurantes({ termo: q, size: 8 });
+        renderDropdown(data.content ?? data, dropdown);
+      } catch {}
+    }, 350);
+  }
+
+  function selectRestaurante(r) {
+    selectedRestauranteId = r.id;
+    document.getElementById('restNome').textContent = r.nome;
+    document.getElementById('restMeta').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${r.bairro||''}, ${r.cidade||''} &nbsp;·&nbsp; ${r.categoria||''}`;
+    document.getElementById('restThumb').textContent = categoriaEmoji(r.categoria);
+    document.getElementById('restSearchWrap').style.display = 'none';
+    document.getElementById('restaurantDisplay').style.display = 'flex';
+    document.getElementById('restDropdown').innerHTML = '';
+    document.getElementById('restDropdown').classList.remove('show');
+    document.getElementById('restSearch').value = '';
+    restSearchActive = false;
+
+    const breadcrumb = document.getElementById('breadcrumbRest');
+    if (breadcrumb) { breadcrumb.textContent = r.nome; breadcrumb.href = `restaurante.html?id=${r.id}`; }
+  }
+
+  // ── Fotos ─────────────────────────────────────────────────
+  let photoCount = 0;
+  function addPhoto(slot) {
+    if (photoCount >= 4) { showToast('Máximo de 4 fotos por avaliação.', 'info'); return; }
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*'; input.style.display = 'none';
+    input.addEventListener('change', function() {
+      if (!this.files || !this.files[0]) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        slot.innerHTML = `
+          <img src="${ev.target.result}" alt="Foto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">
+          <button class="remove-photo" onclick="removePhoto(this.parentElement, event)"><i class="fa-solid fa-times"></i></button>`;
+        slot.appendChild(input);
+        slot.style.border = '2px solid var(--orange)';
+        slot.onclick = null;
+        photoCount++;
+      };
+      reader.readAsDataURL(this.files[0]);
+    });
+    document.body.appendChild(input);
+    input.click();
+  }
+
+  function removePhoto(slot, e) {
+    e.stopPropagation();
+    slot.innerHTML = '<i class="fa-solid fa-plus"></i><span>Foto</span>';
+    slot.style.border = '';
+    slot.onclick = function() { addPhoto(slot); };
+    photoCount--;
+  }
+
+  // ── Submit ────────────────────────────────────────────────
+  async function submitReview(e) {
+    e.preventDefault();
+    const form = e.target;
+
+    if (!selectedRestauranteId) {
+      showToast('Selecione um restaurante.', 'error');
+      showRestSearch();
+      return;
+    }
+
+    const ratingEl = document.querySelector('#starInput input:checked');
+    if (!ratingEl) {
+      document.getElementById('starLabel').textContent = '⚠️ Selecione uma nota para continuar';
+      document.getElementById('starLabel').style.color = '#ef4444';
+      showToast('Selecione uma nota.', 'error');
+      return;
+    }
+
+    const title = document.getElementById('reviewTitle');
+    const comment = document.getElementById('reviewComment');
+    let valid = true;
+    form.querySelectorAll('.form-control').forEach(el => el.classList.remove('invalid'));
+
+    if (!title.value.trim()) { title.classList.add('invalid'); valid = false; }
+    if (comment.value.trim().length < 30) { comment.classList.add('invalid'); valid = false; }
+    if (!valid) { showToast('Preencha todos os campos obrigatórios.', 'error'); return; }
+
+    // Collect aspect ratings
+    function getAspectRating(containerId) {
+      const actives = document.querySelectorAll(`#${containerId} i.active`);
+      return actives.length || null;
+    }
+
+    const visitType = document.getElementById('visitType').value;
+    const visitDate = document.getElementById('visitDate').value;
+
+    const payload = {
+      restauranteId: selectedRestauranteId,
+      nota: parseInt(ratingEl.value),
+      notaComida: getAspectRating('comidaStars'),
+      notaAtendimento: getAspectRating('atendimentoStars'),
+      notaAmbiente: getAspectRating('ambienteStars'),
+      titulo: title.value.trim(),
+      comentario: comment.value.trim(),
+      tipoVisita: visitType || null,
+      dataVisita: visitDate || null,
+    };
+
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+
+    try {
+      if (editMode) {
+        await editarAvaliacao(_editData.id, payload);
+        sessionStorage.removeItem('editAvaliacao');
+        showToast('Avaliação atualizada! ✅', 'success');
+        setTimeout(() => { window.location.href = 'perfil.html'; }, 1500);
+      } else {
+        await criarAvaliacao(payload);
+        showToast('Avaliação enviada! ✅', 'success');
+        sessionStorage.setItem('restauranteId', selectedRestauranteId);
+        setTimeout(() => { window.location.href = 'restaurante.html'; }, 1500);
+      }
+    } catch (err) {
+      showToast(err.message || 'Erro ao enviar avaliação.', 'error');
+      btn.disabled = false;
+      btn.innerHTML = editMode
+        ? '<i class="fa-solid fa-check"></i> Salvar alterações'
+        : '<i class="fa-solid fa-paper-plane"></i> Publicar avaliação';
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function categoriaEmoji(cat) {
+    const map = {'Italiano':'🍝','Japonês':'🍣','Pizzaria':'🍕','Churrascaria':'🥩','Café':'☕','Vegetariano':'🥗','Americano':'🍔','Mexicano':'🌮','Frutos do Mar':'🦞','Chinês':'🥡'};
+    return map[cat] || '🍽️';
+  }
+
+  function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    const icons = {success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+    t.innerHTML = `<i class="fa-solid ${icons[type]||'fa-circle-info'}"></i> ${msg}`;
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+</script>
+</body>
+</html>

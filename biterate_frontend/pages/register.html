@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastrar — BiteRate</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { background: var(--cream-light); min-height: 100vh; display: flex; flex-direction: column; }
+
+    .auth-page {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 64px);
+    }
+
+    .auth-left {
+      background: linear-gradient(150deg, #7a1060 0%, var(--purple) 60%, #2d0028 130%);
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 3rem 3.5rem; color: var(--white); position: relative; overflow: hidden;
+    }
+    .auth-left::before {
+      content: ''; position: absolute;
+      width: 280px; height: 280px; border-radius: 50%;
+      background: rgba(249,69,0,.12); top: -60px; left: -60px;
+    }
+    .auth-tagline {
+      font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+      font-weight: 900; line-height: 1.2; margin-bottom: 1rem; position: relative;
+    }
+    .auth-tagline span { color: var(--cream); }
+    .auth-left p { font-size: .95rem; opacity: .85; line-height: 1.65; max-width: 380px; position: relative; }
+    .steps-list { margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; position: relative; }
+    .step-item { display: flex; align-items: flex-start; gap: .85rem; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--orange); color: var(--white);
+      font-weight: 800; font-size: .85rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-item div strong { display: block; font-size: .92rem; }
+    .step-item div span { font-size: .83rem; opacity: .8; }
+
+    .auth-right {
+      display: flex; flex-direction: column; justify-content: center;
+      align-items: center; padding: 2rem; background: var(--white); overflow-y: auto;
+    }
+    .auth-form-box { width: 100%; max-width: 440px; }
+    .auth-form-box .logo-text {
+      font-size: 1.4rem; font-weight: 900; color: var(--purple);
+      margin-bottom: 1.5rem; display: block; text-align: center;
+    }
+    .auth-form-box .logo-text span { color: var(--orange); }
+    .auth-form-box h1 { font-size: 1.45rem; font-weight: 800; color: var(--gray-800); margin-bottom: .3rem; }
+    .auth-form-box .subtitle { font-size: .88rem; color: var(--gray-600); margin-bottom: 1.5rem; }
+
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap .form-control { padding-right: 2.8rem; }
+    .input-toggle {
+      position: absolute; right: .9rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: .95rem;
+    }
+    .input-toggle:hover { color: var(--gray-600); }
+
+    .strength-bar { display: flex; gap: 4px; margin-top: .4rem; }
+    .strength-bar span {
+      height: 4px; flex: 1; border-radius: 2px;
+      background: var(--gray-200); transition: background .3s;
+    }
+    .strength-label { font-size: .78rem; color: var(--gray-400); margin-top: .25rem; }
+
+    .terms-check { display: flex; align-items: flex-start; gap: .6rem; font-size: .85rem; color: var(--gray-600); margin-bottom: 1.25rem; }
+    .terms-check input { margin-top: 3px; flex-shrink: 0; accent-color: var(--orange); }
+    .terms-check a { color: var(--orange); font-weight: 600; }
+
+    .auth-switch { text-align: center; font-size: .88rem; color: var(--gray-600); margin-top: 1.25rem; }
+    .auth-switch a { color: var(--orange); font-weight: 700; }
+
+    @media(max-width:768px) {
+      .auth-page { grid-template-columns: 1fr; }
+      .auth-left { display: none; }
+      .auth-right { padding: 2rem 1.25rem; justify-content: flex-start; padding-top: 2rem; }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="navbar-logo" href="../index.html">
+      <div class="logo-mark">B</div>
+            <span class="logo-text">bite<span>rate</span>.</span>
+    </a>
+    <div class="navbar-actions" style="margin-left:auto;">
+      <a href="login.html" style="color:rgba(255,255,255,.8);font-size:.88rem;">Já tem conta? <strong style="color:var(--cream);">Entrar</strong></a>
+    </div>
+  </div>
+</nav>
+
+<main class="auth-page">
+  <!-- Left -->
+  <div class="auth-left" aria-hidden="true">
+    <div class="auth-tagline">Junte-se a quem<br><span>avalia cada mordida.</span></div>
+    <p>Crie sua conta gratuita e comece a compartilhar suas experiências gastronômicas hoje mesmo.</p>
+    <ul class="steps-list">
+      <li class="step-item">
+        <div class="step-num">1</div>
+        <div><strong>Crie sua conta</strong><span>Rápido e gratuito, sem cartão de crédito.</span></div>
+      </li>
+      <li class="step-item">
+        <div class="step-num">2</div>
+        <div><strong>Explore restaurantes</strong><span>Navegue por milhares de estabelecimentos avaliados.</span></div>
+      </li>
+      <li class="step-item">
+        <div class="step-num">3</div>
+        <div><strong>Compartilhe experiências</strong><span>Escreva críticas e ajude a comunidade a comer melhor.</span></div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Right -->
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <a href="../index.html" class="logo-text">bite<span>rate</span>.</a>
+      <h1>Criar conta</h1>
+      <p class="subtitle">Grátis e sem compromisso. Comece agora!</p>
+
+      <form id="registerForm" novalidate onsubmit="handleRegister(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="nome">Nome</label>
+            <input class="form-control" type="text" id="nome" name="nome"
+                   placeholder="Seu nome" autocomplete="given-name" required minlength="2">
+            <span class="form-error">Informe seu nome.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sobrenome">Sobrenome</label>
+            <input class="form-control" type="text" id="sobrenome" name="sobrenome"
+                   placeholder="Seu sobrenome" autocomplete="family-name" required minlength="2">
+            <span class="form-error">Informe seu sobrenome.</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="username">Nome de usuário</label>
+          <input class="form-control" type="text" id="username" name="username"
+                 placeholder="@seunome" autocomplete="username" required minlength="3"
+                 oninput="this.value=this.value.replace(/[^a-zA-Z0-9_.]/g,'')">
+          <span class="form-hint">Apenas letras, números, _ e .</span>
+          <span class="form-error">Mínimo de 3 caracteres.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regEmail">E-mail</label>
+          <input class="form-control" type="email" id="regEmail" name="email"
+                 placeholder="seu@email.com" autocomplete="email" required>
+          <span class="form-error">Insira um e-mail válido.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regSenha">Senha</label>
+          <div class="input-icon-wrap">
+            <input class="form-control" type="password" id="regSenha" name="senha"
+                   placeholder="Mínimo 8 caracteres" autocomplete="new-password"
+                   required minlength="8" oninput="checkStrength(this.value)">
+            <button type="button" class="input-toggle" onclick="togglePwd('regSenha', this)" aria-label="Mostrar senha">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+          <div class="strength-bar" id="strengthBar">
+            <span id="s1"></span><span id="s2"></span><span id="s3"></span><span id="s4"></span>
+          </div>
+          <div class="strength-label" id="strengthLabel">Digite uma senha</div>
+          <span class="form-error">A senha deve ter pelo menos 8 caracteres.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmarSenha">Confirmar senha</label>
+          <div class="input-icon-wrap">
+            <input class="form-control" type="password" id="confirmarSenha" name="confirmarSenha"
+                   placeholder="Repita a senha" autocomplete="new-password" required>
+            <button type="button" class="input-toggle" onclick="togglePwd('confirmarSenha', this)" aria-label="Mostrar senha">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+          <span class="form-error" id="confirmError">As senhas não coincidem.</span>
+        </div>
+
+        <label class="terms-check">
+          <input type="checkbox" id="terms" required>
+          Concordo com os <a href="#">Termos de Uso</a> e a <a href="#">Política de Privacidade</a> da BiteRate.
+        </label>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="registerBtn">
+          <i class="fa-solid fa-user-plus"></i> Criar minha conta
+        </button>
+      </form>
+
+      <p class="auth-switch">Já tem uma conta? <a href="login.html">Entrar</a></p>
+    </div>
+  </div>
+</main>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../js/api.js"></script>
+<script>
+  function togglePwd(id, btn) {
+    const input = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text'; icon.className = 'fa-regular fa-eye-slash';
+    } else {
+      input.type = 'password'; icon.className = 'fa-regular fa-eye';
+    }
+  }
+
+  function checkStrength(val) {
+    const bars = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+    const labels = ['Muito fraca','Fraca','Razoável','Forte'];
+    bars.forEach((b, i) => { b.style.background = i < score ? colors[score-1] : 'var(--gray-200)'; });
+    label.textContent = val.length ? labels[score-1] || 'Digite uma senha' : 'Digite uma senha';
+    label.style.color = score > 0 ? colors[score-1] : 'var(--gray-400)';
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    const form = e.target;
+    let valid = true;
+
+    form.querySelectorAll('.form-control').forEach(el => el.classList.remove('invalid'));
+    const confirmError = document.getElementById('confirmError');
+    if (confirmError) confirmError.textContent = '';
+
+    const fields = [
+      { el: form.nome, check: v => v.trim().length >= 2 },
+      { el: form.sobrenome, check: v => v.trim().length >= 2 },
+      { el: form.username, check: v => v.trim().length >= 3 },
+      { el: form.email, check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+      { el: form.senha, check: v => v.length >= 8 },
+      { el: form.confirmarSenha, check: v => v === form.senha.value },
+    ];
+
+    fields.forEach(({ el, check }) => {
+      if (!check(el.value)) { el.classList.add('invalid'); valid = false; }
+    });
+
+    if (form.senha.value !== form.confirmarSenha.value) {
+      if (confirmError) confirmError.textContent = 'As senhas não coincidem.';
+      valid = false;
+    }
+
+    if (!form.terms.checked) {
+      showToast('Você deve aceitar os Termos de Uso.', 'error');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cadastrando...';
+
+    try {
+      await cadastrar({
+        nome: form.nome.value.trim(),
+        sobrenome: form.sobrenome.value.trim(),
+        username: form.username.value.trim(),
+        email: form.email.value.trim(),
+        senha: form.senha.value,
+        confirmarSenha: form.confirmarSenha.value,
+      });
+      showToast('Conta criada com sucesso! Redirecionando...', 'success');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+    } catch (err) {
+      showToast(err.message || 'Erro ao criar conta. Tente novamente.', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Criar conta';
+    }
+  }
+
+  function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info' };
+    t.innerHTML = `<i class="fa-solid ${icons[type]||'fa-circle-info'}"></i> ${msg}`;
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }
+</script>
+</body>
+</html>
