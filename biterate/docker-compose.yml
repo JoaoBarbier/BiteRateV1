@@ -1,0 +1,73 @@
+version: '3.9'
+
+services:
+
+  # ─── MySQL ────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: biterate_mysql
+    restart: unless-stopped
+    env_file:
+      - ./propities/.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - biterate_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_senha"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── phpMyAdmin ───────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: biterate_phpmyadmin
+    restart: unless-stopped
+    env_file:
+      - ./propities/.env
+    ports:
+      - "8081:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - biterate_net
+
+  # ─── Backend Spring Boot ──────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: biterate_backend
+    restart: unless-stopped
+    env_file:
+      - ./propities/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - biterate_net
+
+  # ─── Frontend estático ────────────────────────────────────
+  frontend:
+    image: nginx:alpine
+    container_name: biterate_frontend
+    restart: unless-stopped
+    volumes:
+      - ../biterate_frontend:/usr/share/nginx/html:ro
+    ports:
+      - "3000:80"
+    networks:
+      - biterate_net
+
+volumes:
+  mysql_data:
+
+networks:
+  biterate_net:
+    driver: bridge
