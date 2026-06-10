@@ -53,6 +53,7 @@ public class Cliente implements UserDetails {
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
+    // Relacionamentos
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Avaliacao> avaliacoes;
 
@@ -69,6 +70,8 @@ public class Cliente implements UserDetails {
         this.criadoEm = LocalDateTime.now();
     }
 
+    // getUsername() retorna o email — usado pelo Spring Security para autenticação
+    // getUsernameApelido() retorna o username público exibido no perfil
     public String getUsernameApelido() { return username; }
 
     @Override

@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
 
-  # ─── MySQL ────────────────────────────────────────────────
+  # MySQL
   mysql:
     image: mysql:8.0
     container_name: biterate_mysql
@@ -21,7 +21,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # ─── phpMyAdmin ───────────────────────────────────────────
+  # phpMyAdmin 
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: biterate_phpmyadmin
@@ -36,7 +36,7 @@ services:
     networks:
       - biterate_net
 
-  # ─── Backend Spring Boot ──────────────────────────────────
+  # Backend Spring Boot
   backend:
     build:
       context: .
@@ -53,7 +53,7 @@ services:
     networks:
       - biterate_net
 
-  # ─── Frontend estático ────────────────────────────────────
+  # Frontend estático
   frontend:
     image: nginx:alpine
     container_name: biterate_frontend

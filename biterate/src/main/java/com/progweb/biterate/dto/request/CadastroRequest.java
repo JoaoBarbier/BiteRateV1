@@ -3,6 +3,7 @@ package com.progweb.biterate.dto.request;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
+// Cadastro de novo usuário
 @Data
 public class CadastroRequest {
 

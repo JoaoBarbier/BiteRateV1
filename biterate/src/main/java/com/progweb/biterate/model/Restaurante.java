@@ -31,24 +31,19 @@ public class Restaurante {
     @Column(name = "faixa_preco", length = 1)
     private String faixaPreco;
 
+    // Endereço
     @Column(length = 9)
     private String cep;
-
     @Column(length = 2)
     private String estado;
-
     @Column(nullable = false, length = 150)
     private String rua;
-
     @Column(length = 20)
     private String numero;
-
     @Column(length = 80)
     private String bairro;
-
     @Column(nullable = false, length = 100)
     private String cidade;
-
     @Column(length = 100)
     private String complemento;
 
@@ -72,6 +67,7 @@ public class Restaurante {
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
+    // Relacionamentos
     @OneToMany(mappedBy = "restaurante", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HorarioFuncionamento> horarios;
 

@@ -10,9 +10,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+// Acesso ao banco para a entidade Restaurante
 @Repository
 public interface Restauranterepository extends JpaRepository<Restaurante, Long> {
 
+    // JPA
+    boolean existsByRuaAndNumeroAndCidade(String rua, String numero, String cidade);
+
+    // Query manual para buscar restaurantes com filtros opcionais combinados e paginação
     @Query("SELECT r FROM Restaurante r WHERE " +
            "(:termo IS NULL OR LOWER(r.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR " +
            "LOWER(r.cidade) LIKE LOWER(CONCAT('%', :termo, '%')) OR " +
@@ -47,6 +52,4 @@ public interface Restauranterepository extends JpaRepository<Restaurante, Long> 
             @Param("diaAtual") String diaAtual,
             @Param("horaAtual") String horaAtual,
             Pageable pageable);
-
-    boolean existsByRuaAndNumeroAndCidade(String rua, String numero, String cidade);
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.List;
 
+// Cadastrar ou editar um restaurante
 @Data
 public class RestauranteRequest {
 
@@ -32,6 +33,7 @@ public class RestauranteRequest {
     @NotBlank(message = "Rua é obrigatória")
     private String rua;
 
+    // Número
     @NotBlank(message = "Número é obrigatório")
     private String numero;
 
@@ -50,5 +52,6 @@ public class RestauranteRequest {
 
     private String fotoUrl;
 
+    // Horários de funcionamento por dia da semana
     private List<HorarioRequest> horarios;
 }

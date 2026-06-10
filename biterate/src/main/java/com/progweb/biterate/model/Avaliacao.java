@@ -22,12 +22,11 @@ public class Avaliacao {
     @Column(nullable = false)
     private Integer nota;
 
+    // Notas por categoria — opcionais
     @Column(name = "nota_comida")
     private Integer notaComida;
-
     @Column(name = "nota_atendimento")
     private Integer notaAtendimento;
-
     @Column(name = "nota_ambiente")
     private Integer notaAmbiente;
 
@@ -46,6 +45,7 @@ public class Avaliacao {
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
+    // Relacionamentos
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
