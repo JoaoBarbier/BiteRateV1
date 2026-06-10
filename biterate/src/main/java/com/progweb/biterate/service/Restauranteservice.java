@@ -11,7 +11,6 @@ import com.progweb.biterate.model.Cliente;
 import com.progweb.biterate.model.HorarioFuncionamento;
 import com.progweb.biterate.model.Restaurante;
 import com.progweb.biterate.repository.Avaliacaorepository;
-import com.progweb.biterate.repository.Avaliacaorepository.NotaContagem;
 import com.progweb.biterate.repository.Clienterepository;
 import com.progweb.biterate.repository.HorarioFuncionamentorepository;
 import com.progweb.biterate.repository.Restauranterepository;
