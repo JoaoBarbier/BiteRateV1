@@ -26,6 +26,7 @@ public class Restaurantecontroller {
     private final Restauranteservice restauranteService;
     private final Buscarservice buscarService;
 
+    // Busca restaurantes usando vários filtros opcionais com paginação
     @GetMapping("/buscar")
     public ResponseEntity<Page<RestauranteResumoResponse>> buscar(
             @RequestParam(required = false) String termo,
@@ -52,11 +53,13 @@ public class Restaurantecontroller {
         return ResponseEntity.ok(buscarService.buscarComComodidades(request));
     }
 
+    // Busca os detalhes de um restaurante específico por ID
     @GetMapping("/{id}")
     public ResponseEntity<RestauranteResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(restauranteService.buscarPorId(id));
     }
 
+    // Lista as avaliações de um restaurante específico com paginação
     @GetMapping("/{id}/avaliacoes")
     public ResponseEntity<Page<AvaliacaoResponse>> listarAvaliacoes(
             @PathVariable Long id,
@@ -65,6 +68,7 @@ public class Restaurantecontroller {
         return ResponseEntity.ok(restauranteService.listarAvaliacoes(id, page));
     }
 
+    // Favorita ou desfavorita um restaurante para o usuário logado
     @PostMapping("/{id}/favoritar")
     public ResponseEntity<Void> favoritar(
             @PathVariable Long id,
@@ -74,6 +78,7 @@ public class Restaurantecontroller {
         return ResponseEntity.ok().build();
     }
 
+    // Verifica se o usuário logado favoritou este restaurante (retorna true/false)
     @GetMapping("/{id}/favoritado")
     public ResponseEntity<Boolean> isFavoritado(
             @PathVariable Long id,
@@ -82,6 +87,7 @@ public class Restaurantecontroller {
         return ResponseEntity.ok(restauranteService.isFavoritado(id, clienteAutenticado));
     }
 
+    // Cadastra um novo restaurante no sistema
     @PostMapping
     public ResponseEntity<RestauranteResponse> cadastrar(
             @Valid @RequestBody RestauranteRequest request) {

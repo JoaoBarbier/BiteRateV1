@@ -35,12 +35,14 @@ public class Restauranteservice {
     private final Clienterepository clienteRepository;
     private final HorarioFuncionamentorepository horarioRepository;
 
+    // Busca um restaurante por ID e o converte em DTO de resposta
     public RestauranteResponse buscarPorId(Long id) {
         Restaurante restaurante = restauranteRepository.findById(id)
                 .orElseThrow(() -> new NaoEncontradoException("Restaurante não encontrado"));
         return toResponse(restaurante);
     }
 
+    // Lista as avaliações de um restaurante específico com paginação (10 por página) ordenadas por data
     public Page<AvaliacaoResponse> listarAvaliacoes(Long restauranteId, int page) {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("criadoEm").descending());
         return avaliacaoRepository
@@ -48,6 +50,7 @@ public class Restauranteservice {
                 .map(this::toAvaliacaoResponse);
     }
 
+    // Alterna o estado de favorito do restaurante para o cliente logado (adiciona ou remove)
     @Transactional
     public void favoritar(Long restauranteId, Cliente clienteAutenticado) {
         Cliente cliente = clienteRepository.findById(clienteAutenticado.getId())
@@ -63,6 +66,7 @@ public class Restauranteservice {
         clienteRepository.save(cliente);
     }
 
+    // Verifica se o restaurante específico está na lista de favoritos do cliente
     @Transactional(readOnly = true)
     public boolean isFavoritado(Long restauranteId, Cliente clienteAutenticado) {
         Cliente cliente = clienteRepository.findById(clienteAutenticado.getId())
@@ -71,6 +75,7 @@ public class Restauranteservice {
                 .anyMatch(r -> r.getId().equals(restauranteId));
     }
 
+    // Cadastra um novo restaurante verificando duplicidade de endereço e salva os horários de funcionamento
     @Transactional
     public RestauranteResponse cadastrar(RestauranteRequest request) {
         if (restauranteRepository.existsByRuaAndNumeroAndCidade(
@@ -97,6 +102,7 @@ public class Restauranteservice {
 
         restauranteRepository.save(restaurante);
 
+        // Se houver horários na requisição, mapeia e salva associando ao restaurante cadastrado
         if (request.getHorarios() != null) {
             List<HorarioFuncionamento> horarios = request.getHorarios().stream()
                     .map(h -> HorarioFuncionamento.builder()
@@ -113,6 +119,7 @@ public class Restauranteservice {
         return toResponse(restaurante);
     }
 
+    // Recalcula a nota média com arredondamento e o total de avaliações do restaurante
     public void recalcularMedia(Long restauranteId) {
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
                 .orElseThrow(() -> new NaoEncontradoException("Restaurante não encontrado"));
@@ -125,6 +132,7 @@ public class Restauranteservice {
         restauranteRepository.save(restaurante);
     }
 
+    // Converte a entidade Restaurante em DTO montando horários e a distribuição das notas
     public RestauranteResponse toResponse(Restaurante r) {
         List<HorarioResponse> horarios = horarioRepository.findByRestauranteId(r.getId())
                 .stream()
@@ -160,14 +168,16 @@ public class Restauranteservice {
                 .build();
     }
 
+    // Gera um mapa de 1 a 5 estrelas contendo a quantidade de votos para cada nota
     private Map<Integer, Long> calcularDistribuicao(Long restauranteId) {
         Map<Integer, Long> dist = new HashMap<>();
-        for (int i = 1; i <= 5; i++) dist.put(i, 0L);
+        for (int i = 1; i <= 5; i++) dist.put(i, 0L); // Inicializa todas as notas com zero votos
         avaliacaoRepository.contarPorNota(restauranteId)
                 .forEach(item -> dist.put(item.getNota(), item.getContagem()));
         return dist;
     }
 
+    // Converte a entidade interna Avaliacao para o seu DTO de resposta correspondente
     private AvaliacaoResponse toAvaliacaoResponse(Avaliacao a) {
         return AvaliacaoResponse.builder()
                 .id(a.getId())

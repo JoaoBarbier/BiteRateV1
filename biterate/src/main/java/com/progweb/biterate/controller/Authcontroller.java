@@ -13,20 +13,23 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
+@RequiredArgsConstructor // Injeta o Authservice automaticamente
 public class Authcontroller {
 
     private final Authservice authService;
 
+    // Endpoint para criar conta nova (Retorna HTTP 201)
     @PostMapping("/cadastro")
     public ResponseEntity<ClienteResponse> cadastrar(@Valid @RequestBody CadastroRequest request) {
         ClienteResponse response = authService.cadastrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    // Endpoint para logar e receber o token (Retorna HTTP 200)
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 }
+

@@ -19,12 +19,14 @@ public class Avaliacaocontroller {
 
     private final Avaliacaoservice avaliacaoService;
 
+    // Lista as últimas avaliações (padrão: 6 itens)
     @GetMapping("/recentes")
     public ResponseEntity<Page<AvaliacaoResponse>> recentes(
             @RequestParam(defaultValue = "6") int size) {
         return ResponseEntity.ok(avaliacaoService.listarRecentes(size));
     }
 
+    // Cria uma avaliação vinculada ao usuário logado
     @PostMapping
     public ResponseEntity<AvaliacaoResponse> criar(
             @Valid @RequestBody AvaliacaoRequest request,
@@ -34,6 +36,7 @@ public class Avaliacaocontroller {
                 .body(avaliacaoService.criar(request, clienteAutenticado));
     }
 
+    // Edita uma avaliação por ID (só o dono pode alterar)
     @PutMapping("/{id}")
     public ResponseEntity<AvaliacaoResponse> editar(
             @PathVariable Long id,
@@ -42,6 +45,7 @@ public class Avaliacaocontroller {
         return ResponseEntity.ok(avaliacaoService.editar(id, request, clienteAutenticado));
     }
 
+    // Deleta uma avaliação por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(
             @PathVariable Long id,

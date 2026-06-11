@@ -21,20 +21,24 @@ public class Buscarservice {
 
     private final Restauranterepository restauranteRepository;
 
+    // Executa a busca complexa aplicando filtros, ordenação, paginação e status de funcionamento (aberto/fechado)
     public Page<RestauranteResumoResponse> buscarComComodidades(BuscarRestauranteRequest request) {
         Pageable pageable = resolverOrdenacao(request);
         List<String> c = request.getComodidades();
 
+        // Quebra a lista de comodidades em variáveis individuais para passar direto na Query nativa do Repository
         String c1 = (c != null && c.size() > 0) ? c.get(0) : null;
         String c2 = (c != null && c.size() > 1) ? c.get(1) : null;
         String c3 = (c != null && c.size() > 2) ? c.get(2) : null;
         String c4 = (c != null && c.size() > 3) ? c.get(3) : null;
         String c5 = (c != null && c.size() > 4) ? c.get(4) : null;
 
+        // Pega a hora e o dia da semana atual para validar se o restaurante está aberto agora
         LocalDateTime agora = LocalDateTime.now();
         String diaAtual = resolverDia(agora.getDayOfWeek());
         String horaAtual = agora.format(DateTimeFormatter.ofPattern("HH:mm"));
 
+        // Faz a consulta no banco de dados e converte o resultado para o DTO de resumo
         return restauranteRepository
                 .buscarComFiltros(
                         request.getTermo(),
@@ -60,6 +64,7 @@ public class Buscarservice {
                         .build());
     }
 
+    // Converte o enum DayOfWeek do Java para a string de 3 letras que o banco de dados espera
     private String resolverDia(DayOfWeek dow) {
         return switch (dow) {
             case MONDAY    -> "seg";
@@ -72,6 +77,7 @@ public class Buscarservice {
         };
     }
 
+    // Define a direção e o campo de ordenação com base no parâmetro recebido da requisição
     private Pageable resolverOrdenacao(BuscarRestauranteRequest request) {
         Sort sort = switch (request.getOrdenacao() != null ? request.getOrdenacao() : "relevancia") {
             case "nota"       -> Sort.by("mediaNote").descending();

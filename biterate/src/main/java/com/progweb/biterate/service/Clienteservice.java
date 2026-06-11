@@ -23,11 +23,14 @@ public class Clienteservice {
     private final Clienterepository clienteRepository;
     private final Avaliacaorepository avaliacaoRepository;
 
+    // Retorna os dados do perfil obtidos diretamente do token autenticado
     public ClienteResponse buscarPerfil(Cliente clienteAutenticado) {
         return toResponse(clienteAutenticado);
     }
 
+    // Atualiza os dados cadastrais do cliente, bloqueando usernames duplicados
     public ClienteResponse editarPerfil(Cliente clienteAutenticado, EditarPerfilRequest request) {
+        // Se mudou o username, valida se o novo já pertence a outra pessoa
         if (!clienteAutenticado.getUsernameApelido().equals(request.getUsername())
                 && clienteRepository.existsByUsername(request.getUsername())) {
             throw new ConflitoException("Username já está em uso");
@@ -43,6 +46,7 @@ public class Clienteservice {
         return toResponse(clienteAutenticado);
     }
 
+    // Lista todas as avaliações que o usuário autenticado já fez na plataforma
     public List<AvaliacaoResponse> listarAvaliacoes(Cliente clienteAutenticado) {
         return avaliacaoRepository
                 .findByClienteIdOrderByCriadoEmDesc(clienteAutenticado.getId())
@@ -51,10 +55,12 @@ public class Clienteservice {
                 .toList();
     }
 
+    // Busca a lista de restaurantes favoritados pelo usuário autenticado (Transação somente leitura)
     @Transactional(readOnly = true)
     public List<RestauranteResumoResponse> listarFavoritos(Cliente clienteAutenticado) {
         Cliente cliente = clienteRepository.findById(clienteAutenticado.getId())
                 .orElseThrow(() -> new NaoEncontradoException("Cliente não encontrado"));
+
         return cliente.getFavoritos().stream()
                 .map(r -> RestauranteResumoResponse.builder()
                         .id(r.getId())
@@ -70,6 +76,7 @@ public class Clienteservice {
                 .toList();
     }
 
+    // Mapeia os dados da entidade Cliente e calcula os totais para o DTO de resposta
     private ClienteResponse toResponse(Cliente cliente) {
         int totalAvaliacoes = (int) avaliacaoRepository.countByClienteId(cliente.getId());
         int totalFavoritos = (int) clienteRepository.countFavoritosByClienteId(cliente.getId());
@@ -88,6 +95,7 @@ public class Clienteservice {
                 .build();
     }
 
+    // Mapeia uma entidade interna Avaliacao para o seu DTO de resposta correspondente
     private AvaliacaoResponse toAvaliacaoResponse(Avaliacao avaliacao) {
         return AvaliacaoResponse.builder()
                 .id(avaliacao.getId())

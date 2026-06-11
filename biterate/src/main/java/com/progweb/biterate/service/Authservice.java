@@ -26,6 +26,7 @@ public class Authservice {
     private final Jwtservice jwtService;
     private final AuthenticationManager authenticationManager;
 
+    // Registra um novo usuário validando senhas, e-mail único e username único
     public ClienteResponse cadastrar(CadastroRequest request) {
         if (!request.getSenha().equals(request.getConfirmarSenha())) {
             throw new RuntimeException("As senhas não coincidem");
@@ -37,6 +38,7 @@ public class Authservice {
             throw new ConflitoException("Username já está em uso");
         }
 
+        // Cria a entidade criptografando a senha antes de salvar
         Cliente cliente = Cliente.builder()
                 .nome(request.getNome())
                 .sobrenome(request.getSobrenome())
@@ -49,7 +51,9 @@ public class Authservice {
         return toResponse(cliente);
     }
 
+    // Autentica as credenciais e devolve o token JWT com os dados do usuário
     public LoginResponse login(LoginRequest request) {
+        // Dispara a validação do Spring Security (valida email e senha criptografada)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha())
         );
@@ -61,9 +65,11 @@ public class Authservice {
         return new LoginResponse(token, toResponse(cliente));
     }
 
+    // Método auxiliar para converter a entidade Cliente no DTO de resposta preenchendo os totais
     private ClienteResponse toResponse(Cliente cliente) {
         int totalAvaliacoes = (int) avaliacaoRepository.countByClienteId(cliente.getId());
         int totalFavoritos  = (int) clienteRepository.countFavoritosByClienteId(cliente.getId());
+
         return ClienteResponse.builder()
                 .id(cliente.getId())
                 .nome(cliente.getNome())
